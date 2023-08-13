@@ -633,11 +633,6 @@ aalta_formula *ConstructBlockFormula(list<Syn_Frame *> &prefix, aalta_formula *e
 void BlockState(CARChecker &checker, list<Syn_Frame *> &prefix, bool verbose)
 {
     aalta_formula::af_prt_set to_block;
-    for (auto it = Syn_Frame::failure_state.begin(); it != Syn_Frame::failure_state.end(); ++it)
-    {
-        aalta_formula *tmp = (aalta_formula *)(Syn_Frame::bddP_to_afP[ull(*it)]);
-        tmp->to_or_set(to_block);
-    }
     for (auto it = prefix.begin(); it != prefix.end(); ++it)
         ((*it)->GetFormulaPointer())->to_or_set(to_block);
     for (auto it = to_block.begin(); it != to_block.end(); ++it)
