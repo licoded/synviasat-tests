@@ -1,6 +1,7 @@
 #include <list>
 #include <cassert>
 #include <map>
+#include <unordered_map>
 #include <sys/time.h>
 
 #include "synthesis.h"
@@ -10,6 +11,13 @@
 using namespace std;
 using namespace aalta;
 
+int Syn_Frame::print_state_cnt = 0;
+unordered_map<int, string> Syn_Frame::print_states;
+string Syn_Frame::get_print_id(int state_id)
+{
+    print_states.insert({state_id, "state"+to_string(print_states.size()+1)});
+    return print_states.at(state_id);
+}
 // static public variable of Syn_Frame
 int Syn_Frame::num_varX_;
 int Syn_Frame::num_varY_;
@@ -99,7 +107,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             }
             if (verbose)
                 cout << ", then pop the top item." << endl
-                     << "insert to winning state: " << (cur_frame->GetFormulaPointer())->to_string() << endl;
+                     << "insert to winning state: " << (cur_frame->GetFormulaPointer())->to_string() << endl
+                     << "insert to winning state id: " << Syn_Frame::get_print_id((cur_frame->GetFormulaPointer())->id()) << endl;
             Syn_Frame::winning_state.insert(ull(cur_frame->GetBddPointer()));
             delete cur_frame;
             searcher.pop_back();
@@ -121,7 +130,8 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             }
             if (verbose)
                 cout << ", then pop the top item." << endl
-                     << "insert to failure state: " << (cur_frame->GetFormulaPointer())->to_string() << endl;
+                     << "insert to failure state: " << (cur_frame->GetFormulaPointer())->to_string() << endl
+                     << "insert to failure state id: " << Syn_Frame::get_print_id((cur_frame->GetFormulaPointer())->id()) << endl;
             Syn_Frame::failure_state.insert(ull(cur_frame->GetBddPointer()));
             Syn_Frame::bddP_to_afP[ull(cur_frame->GetBddPointer())] = ull(cur_frame->GetFormulaPointer());
             delete cur_frame;    //////////////
@@ -210,6 +220,32 @@ Status Syn_Frame::CheckRealizability(bool verbose)
     return Unknown;
 }
 
+const vector<string> signal2str = {
+    "To_winning_state",
+    "To_failure_state",
+    "Accepting_edge",
+    "Incomplete_Y",
+    "NoWay"
+};
+void Syn_Frame::process_signal_printInfo(Signal signal, aalta_formula *before_af, aalta_formula *after_af)
+{
+    int before_num = before_af->to_set().size();
+    int after_num = after_af->to_set().size();
+    if(before_num != after_num)
+    {
+        std::cout
+                << "process_signal-" << signal << "\t"
+                << before_num-after_num << "\t"
+                << before_num << "\t"
+                << after_num << "\t"
+                << std::endl;
+        std::cout
+                << signal2str[signal] << "-" << Syn_Frame::get_print_id(state_in_bdd_->GetFormulaPointer()->id()) << std::endl
+                << "\t\t" << before_af->to_literal_set_string() << std::endl
+                << "\t\t" << after_af->to_literal_set_string() << std::endl;
+    }
+}
+
 void Syn_Frame::process_signal(Signal signal, bool verbose)
 {
     switch (signal)
@@ -217,6 +253,8 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
     case To_winning_state:
     {
         aalta_formula *x_reduced = Generalize(state_in_bdd_->GetFormulaPointer(), current_Y_, current_X_, To_winning_state);
+        if (verbose)
+            process_signal_printInfo(signal, current_X_, x_reduced);
         aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
         X_constraint_ = (aalta_formula(aalta_formula::And, X_constraint_, neg_x_reduced).simplify())->unique();
         current_X_ = NULL;
@@ -237,6 +275,8 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
     case Accepting_edge:
     {
         aalta_formula *x_reduced = Generalize(state_in_bdd_->GetFormulaPointer(), current_Y_, current_X_, Accepting_edge);
+        if (verbose)
+            process_signal_printInfo(signal, current_X_, x_reduced);
         aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
         X_constraint_ = (aalta_formula(aalta_formula::And, X_constraint_, neg_x_reduced).simplify())->unique();
         current_X_ = NULL;
@@ -286,9 +326,9 @@ void Syn_Frame::PrintInfo()
     cout << "Y constraint: " << Y_constraint_->to_string() << endl;
     cout << "X constraint: " << X_constraint_->to_string() << endl;
     if (current_Y_ != NULL)
-        cout << "current Y: " << current_Y_->to_string() << endl;
+        cout << "current Y: " << current_Y_->to_literal_set_string() << endl;
     if (current_X_ != NULL)
-        cout << "current X: " << current_X_->to_string() << endl;
+        cout << "current X: " << current_X_->to_literal_set_string() << endl;
     cout << (is_trace_beginning_ ? "is " : "is not ") << "a starting point" << endl;
 }
 
@@ -307,6 +347,8 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     {
         cout << "expand the stack by ltlf-sat" << endl
              << "state formula: " << (tp_frame->GetFormulaPointer())->to_string() << endl
+             << "state id: " << Syn_Frame::get_print_id((tp_frame->GetFormulaPointer())->id()) << endl
+             << "is finding new " << ((tp_frame->IsNotTryingY()) ? "Y" : "X") << endl
              << "constraint of edge: " << edge_constraint->to_string() << endl;
     }
     // aalta_formula *block_formula = ConstructBlockFormula(searcher, edge_constraint);
@@ -388,13 +430,16 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
             //     }
             // }
             if (verbose)
-                cout << "\tby edge: Y=" << Y_edge->to_string() << " X=" << X_edge->to_string() << endl
-                     << "\tto state: " << successor->to_string() << endl;
+                cout << "\t\tby edge: " << endl
+                     << "\t\t\tY = " << Y_edge->to_literal_set_string() << endl
+                     << "\t\t\tX = " << X_edge->to_literal_set_string() << endl
+                     << "\t\tto state: " << successor->to_string() << endl
+                     << "\t\tto state id: " << Syn_Frame::get_print_id(successor->id()) << endl;
             searcher.push_back(frame);
         }
         // the last position is the accepting edge
         if (verbose)
-            cout << "last position of sat trace is accepting edge" << endl;
+            cout << "last position of sat trace is accepting edge (we will then check if BaseWinningAtY)" << endl;
         aalta_formula *Y_edge = (tr->back()).first;
         aalta_formula *end_state = (searcher.back())->GetFormulaPointer();
         unordered_set<int> edge;
@@ -403,7 +448,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
         {
             if (verbose)
             {
-                cout << "for acc edge, Y\\models state, so top item is base-winning: " << end_state->to_string() << endl;
+                cout << "=====BaseWinningAtY\tBEGIN\nfor acc edge, Y\\models state, so top item is base-winning: " << end_state->to_string() << endl;
             }
             if (searcher.size() == 1)
             {
@@ -416,7 +461,9 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
             {
                 if (verbose)
                     cout << "pop the top item." << endl
-                         << "insert to winning state: " << ((searcher.back())->GetFormulaPointer())->to_string() << endl;
+                         << "insert to winning state: " << ((searcher.back())->GetFormulaPointer())->to_string() << endl
+                         << "insert to winning state id: " << Syn_Frame::get_print_id(((searcher.back())->GetFormulaPointer())->id()) << endl
+                         << "=====BaseWinningAtY\tEND" << endl;
                 Syn_Frame::winning_state.insert(ull((searcher.back())->GetBddPointer()));
                 delete searcher.back();
                 searcher.pop_back();
@@ -428,7 +475,10 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
             aalta_formula *X_edge = (tr->back()).second;
             (searcher.back())->SetTravelDirection(Y_edge, X_edge);
             if (verbose)
-                cout << "accepting edge: Y=" << Y_edge->to_string() << " X=" << X_edge->to_string() << endl;
+                cout << "=====not BaseWinningAtY\tBEGIN" << endl
+                     << "accepting edge:" << endl
+                     << "\t\tY = " << Y_edge->to_literal_set_string() << endl
+                     << "\t\tX = " << X_edge->to_literal_set_string() << endl;
             (searcher.back())->process_signal(Accepting_edge, verbose);
         }
     }
@@ -436,27 +486,28 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     { // unsat
         if (verbose)
         {
-            cout << "SAT checking result: unsat" << endl;
+            cout << "SAT checking result: unsat (we will then check is finding new X or new Y)" << endl;
         }
         if (tp_frame->IsNotTryingY())
         { // current frame is unrealizable immediately
             if (verbose)
             {
-                cout << "isn't traveling some concrete value of Y-variables, " << endl
+                cout << "=====\nis finding new Y but unsat (not found), "
                      << "so the top item is unrealizable immediately" << endl;
             }
             if (searcher.size() == 1)
             {
                 if (verbose)
                     cout << "size of stack is 1." << endl
-                         << "finish searching, synthesis result is Unrealizable" << endl;
+                         << "finish searching, synthesis result is Unrealizable\n=====" << endl;
                 return Unrealizable;
             }
             else
             {
                 if (verbose)
                     cout << "pop the top item." << endl
-                         << "insert to failure state: " << ((searcher.back())->GetFormulaPointer())->to_string() << endl;
+                         << "insert to failure state: " << ((searcher.back())->GetFormulaPointer())->to_string() << endl
+                         << "insert to failure state id: " << Syn_Frame::get_print_id(((searcher.back())->GetFormulaPointer())->id()) << endl;
                 auto bdd_ptr = (searcher.back())->GetBddPointer();
                 Syn_Frame::failure_state.insert(ull(bdd_ptr));
                 Syn_Frame::bddP_to_afP[ull(bdd_ptr)] = ull((searcher.back())->GetFormulaPointer());
@@ -487,7 +538,8 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
         else
         {
             if (verbose)
-                cout << "for current value of Y-variables, there is no more sat trace." << endl;
+                cout << "=====\nis finding new X but unsat (not found), "
+                     << "so current_Y is not OK, need change a new Y. " << endl;
             tp_frame->process_signal(NoWay, verbose);
         }
     }
