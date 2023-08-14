@@ -252,21 +252,25 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
         current_X_ = NULL;
         break;
     }
-    case NoWay:
-    {
-        aalta_formula *state = state_in_bdd_->GetFormulaPointer();
-        state = aalta_formula(aalta_formula::And, state, X_constraint_).unique();
-        aalta_formula *y_reduced = Generalize(state, current_Y_, NULL, NoWay);
-        aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
-        Y_constraint_ = (aalta_formula(aalta_formula::And, Y_constraint_, neg_y_reduced).simplify())->unique();
-
-        X_constraint_ = aalta_formula::TRUE();
-
-        current_Y_ = NULL;
-        current_X_ = NULL;
-        break;
     }
-    }
+}
+
+void Syn_Frame::process_signal_NoWay(list<Syn_Frame *> &searcher, bool verbose)
+{
+    aalta_formula *state = state_in_bdd_->GetFormulaPointer();
+    state = aalta_formula(aalta_formula::And, state, X_constraint_).unique();
+
+    /* Find the smallest Y from current_Y to make state /\ X_constraint_ UNSAT */
+    aalta_formula::af_prt_set assump = current_Y_->to_set();
+    aalta_formula *y_reduced = GetUnsatAssump(state/* state /\ X_constraint_ */, searcher, assump); 
+
+    aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
+    Y_constraint_ = (aalta_formula(aalta_formula::And, Y_constraint_, neg_y_reduced).simplify())->unique();
+
+    X_constraint_ = aalta_formula::TRUE();
+
+    current_Y_ = NULL;
+    current_X_ = NULL;
 }
 
 aalta_formula *Syn_Frame::GetEdgeConstraint()
@@ -485,7 +489,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
         {
             if (verbose)
                 cout << "for current value of Y-variables, there is no more sat trace." << endl;
-            tp_frame->process_signal(NoWay, verbose);
+            tp_frame->process_signal_NoWay(searcher, verbose);
         }
     }
     // cout << "call after stack size: " << searcher.size() << endl;

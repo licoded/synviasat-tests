@@ -69,6 +69,7 @@ public:
     // tell the frame the result of current choice
     // and the frame performs some operations
     void process_signal(Signal signal, bool verbose = false);
+    void process_signal_NoWay(list<Syn_Frame *> &searcher, bool verbose = false);
 
     // whther the current frame is
     // the beginning of a sat trace

@@ -32,7 +32,7 @@ Ternary CheckCompleteY(aalta_formula *state, unordered_set<int> &Y);
 Ternary Calculate(int op, Ternary l_val, Ternary r_val);
 
 // MUC
-aalta_formula *GetUnsatAssump(aalta_formula *phi, aalta_formula::af_prt_set &assumption);
+aalta_formula *GetUnsatAssump(aalta_formula *phi, list<Syn_Frame *> &searcher, aalta_formula::af_prt_set &assumption);
 
 inline aalta_formula *int_to_aalta(int lit)
 {

@@ -175,11 +175,6 @@ aalta_formula *Generalize(aalta_formula *state, aalta_formula *Y, aalta_formula 
         Y->to_set(to_reduce);
         return Generalize_(state, save, to_reduce, TestIncompleteY);
     }
-    case NoWay:
-    {
-        aalta_formula::af_prt_set assump = Y->to_set();
-        return GetUnsatAssump(state, assump);
-    }
     }
 }
 
@@ -258,6 +253,21 @@ aalta_formula *mk_and(aalta_formula::af_prt_set *af_set)
     return res;
 }
 
+bool IsUnsat(aalta_formula *phi, list<Syn_Frame *> &searcher, aalta_formula::af_prt_set *psi, list<aalta_formula::af_prt_set *> &S, aalta_formula::af_prt_set &muc)
+{
+    phi = aalta_formula(aalta_formula::And, phi, mk_and(psi)).unique();
+    for (auto it = S.begin(); it != S.end(); ++it)
+        phi = aalta_formula(aalta_formula::And, phi, mk_and(*it)).unique();
+    phi = aalta_formula(aalta_formula::And, phi, mk_and(&muc)).unique();
+    phi = phi->add_tail();
+    phi = phi->remove_wnext();
+    phi = phi->simplify();
+    phi = phi->split_next();
+    CARChecker checker(phi, false, false);
+    BlockState(checker, searcher, false);
+    return !(checker.check());
+}
+
 bool IsUnsat(aalta_formula *phi, aalta_formula::af_prt_set *psi, list<aalta_formula::af_prt_set *> &S, aalta_formula::af_prt_set &muc)
 {
     phi = aalta_formula(aalta_formula::And, phi, mk_and(psi)).unique();
@@ -272,7 +282,7 @@ bool IsUnsat(aalta_formula *phi, aalta_formula::af_prt_set *psi, list<aalta_form
     return !(checker.check());
 }
 
-aalta_formula *GetUnsatAssump(aalta_formula *phi, aalta_formula::af_prt_set &assumption)
+aalta_formula *GetUnsatAssump(aalta_formula *phi, list<Syn_Frame *> &searcher, aalta_formula::af_prt_set &assumption)
 {
     aalta_formula::af_prt_set *assum = new aalta_formula::af_prt_set(assumption);
     if (assum->size() == 0)
@@ -299,12 +309,12 @@ aalta_formula *GetUnsatAssump(aalta_formula *phi, aalta_formula::af_prt_set &ass
         for (; i < (psi->size()); ++it, ++i)
             psi_2->insert(*it);
         delete psi;
-        if (IsUnsat(phi, psi_1, S, muc))
+        if (IsUnsat(phi, searcher, psi_1, S, muc))
         {
             S.push_back(psi_1);
             delete psi_2;
         }
-        else if (IsUnsat(phi, psi_2, S, muc))
+        else if (IsUnsat(phi, searcher, psi_2, S, muc))
         {
             S.push_back(psi_2);
             delete psi_1;
