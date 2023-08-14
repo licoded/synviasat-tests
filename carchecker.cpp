@@ -6,6 +6,7 @@
  */
  
  #include "carchecker.h"
+ #include "synthesis.h"
  #include "formula/olg_formula.h"
  #include <iostream>
  using namespace std;
@@ -211,24 +212,23 @@
  	
  	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level)
  	{
-		int flag = solver_new_var (); //
- 		while (try_satisfy_at (f, frame_level, flag))
+		aalta_formula *cur_dfa_state;	// TODO: pass as a parameter in try_satisfy() func
+		int dfa_block_flag = solver_->newVar();
+ 		while (try_satisfy_at (f, frame_level, dfa_block_flag))
  		{
  			Transition *t = get_transition ();
-			// label, next
-			aalta_formula* dfaNext = fprog(dfaStates_.back (), t.label);
-			if (dfaNextIsFailure(dfaNext, toBlock))
+			// TODO: confirm t->label() only contains literals, otherwise it will causes errors
+			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			if (need_block(dfaNext))	// there is a implicit param block_dfa_states in dfaNextIsFailure() func
 			{
-				//block label
-				Cube toBolck = t.label;
-				toBlock.push_back (flag);
-				solver_add_clause_from_cube (toBolck);
+				vector<int> label_vec;
+				t->label()->to_vec(label_vec);
+				// TODO: confirm whether the (a, Xa) check in add_clause_for_frame() func is OK for our usage
+				solver_->add_clause_for_frame (label_vec, dfa_block_flag);
 				continue;
 			}
  			if (evidence_ != NULL)
  				evidence_ -> push (t->label ());
-			if (dfaStates_ != NULL)
- 				dfaStates_ -> push (dfaNext);
  			if (frame_level == 0)
  			{
  				if (sat_once (t->next ()))
@@ -239,8 +239,6 @@
  					add_frame_element (frame_level, uc);
 					if(evidence_ != NULL)
 						evidence_->pop_back();
-					if(dfaStates_ != NULL)
-						dfaStates_->pop_back();
  					continue;
  				}
  			}
@@ -249,7 +247,6 @@
  			if (evidence_ != NULL)
  				evidence_ -> pop_back ();
  		}
-		// solver_add_clause (flag); //
  		std::vector<int> uc = get_selected_uc (); 
  		add_frame_element (frame_level+1, uc);
  		return false;

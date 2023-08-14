@@ -105,9 +105,10 @@ namespace aalta
 		}
 		
 		//check whether \@f has a next state that can block constraints at level \@frame_level
-		inline bool try_satisfy_at (aalta_formula *f, int frame_level)
+		inline bool try_satisfy_at (aalta_formula *f, int frame_level, int dfa_block_flag)
  		{
- 			return solver_->solve_with_assumption (f, frame_level); //need specialized?
+			// TODO: check the block/negative logic whether is OK
+ 			return solver_->solve_with_assumption (f, frame_level, dfa_block_flag); //need specialized?
  		}
  	
  		//get a transition from SAT solver.

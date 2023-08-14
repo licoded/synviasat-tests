@@ -3583,6 +3583,26 @@ aalta_formula::to_set (std::unordered_set<int>& edge)
   }
 }
 
+// for synthesis, block dfa in aaltaf
+void
+aalta_formula::to_vec (std::vector<int>& edge)
+{
+  //std::cout<<this->to_string()<<std::endl;
+  int op = oper();
+  assert(op==True ||op == And || op == Not || op >= 11);
+  if(op==True)
+    return;
+  else if(op >= 11)
+    edge.push_back(op);
+  else if(op == Not)
+    edge.push_back(-(_right->oper()));
+  else
+  {
+    _left->to_vec(edge);
+    _right->to_vec(edge);
+  }
+}
+
 hash_set<aalta_formula*> 
 aalta_formula::and_to_set()
 {

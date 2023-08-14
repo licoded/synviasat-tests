@@ -22,6 +22,17 @@
 		assumption_.push (SAT_lit (frame_flags_[frame_level]));
 		return solve_assumption ();
  	}
+
+	bool CARSolver::solve_with_assumption (aalta_formula* f, int frame_level, int dfa_block_flag)
+ 	{
+ 		assert (frame_level < frame_flags_.size ());
+ 		assert (!unsat_forever_);
+ 		set_selected_assumption (f);
+		get_assumption_from (f, false);
+		assumption_.push (SAT_lit (frame_flags_[frame_level]));
+		assumption_.push (SAT_lit (dfa_block_flag));
+		return solve_assumption ();
+ 	}
  	
  	void CARSolver::add_clause_for_frame (std::vector<int>& uc, int frame_level)
  	{

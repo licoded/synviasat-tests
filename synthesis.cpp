@@ -17,6 +17,7 @@ set<int> Syn_Frame::var_X;
 set<int> Syn_Frame::var_Y;
 unordered_set<ull> Syn_Frame::winning_state;
 unordered_set<ull> Syn_Frame::failure_state;
+list<Syn_Frame *> *Syn_Frame::searcher = new list<Syn_Frame *>();
 map<ull, ull> Syn_Frame::bddP_to_afP;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
@@ -51,6 +52,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame::bddP_to_afP[ull(FormulaInBdd::FALSE_bddP_)] = ull(aalta_formula::FALSE());
 
     list<Syn_Frame *> searcher;
+    Syn_Frame::searcher = &searcher;
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
     searcher.push_back(init);
     if (verbose)
@@ -492,6 +494,19 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     return Unknown;
 }
 
+bool need_block(aalta_formula *dfa_state)
+{
+    FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);
+    if (Syn_Frame::failure_state.find(ull(state_in_bdd_->GetBddPointer())) != Syn_Frame::failure_state.end())
+        return true;
+    for (auto it = Syn_Frame::searcher->begin(); it != Syn_Frame::searcher->end(); it++)
+    {
+        if ((*it)->GetFormulaPointer() == dfa_state)
+            return true;
+    }
+    return false;
+}
+
 aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge)
 {
     if (predecessor == NULL)
@@ -575,6 +590,13 @@ aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int>
         else
             return aalta_formula(aalta_formula::And, first_part, second_part).unique();
     }
+}
+
+aalta_formula *FormulaProgression(aalta_formula *predecessor, aalta_formula *edge)
+{
+    unordered_set<int> edge_set;
+    edge->to_set(edge_set);
+    return FormulaProgression(predecessor, edge_set);
 }
 
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y)

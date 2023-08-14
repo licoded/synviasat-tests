@@ -23,6 +23,7 @@ namespace aalta
 
 		//functions
 		bool solve_with_assumption (aalta_formula* f, int frame_level);
+		bool solve_with_assumption (aalta_formula* f, int frame_level, int dfa_block_flag);
 		void add_clause_for_frame (std::vector<int>& uc, int frame_level);
 		void create_flag_for_frame (int frame_level);
 		

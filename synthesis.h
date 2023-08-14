@@ -46,6 +46,7 @@ public:
     // the bdd pointer of winning/failure state
     static unordered_set<ull> winning_state;
     static unordered_set<ull> failure_state;
+    static list<Syn_Frame *> *searcher;
 
     // from bdd pointer to aalta_formula pointer
     // for blocking failure state
@@ -117,7 +118,11 @@ private:
 
 Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, bool verbose = false);
 
+bool need_block(aalta_formula *dfa_state);
+
 aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
+// ATTENTION: the edge parameter can only be a CNF of literals
+aalta_formula *FormulaProgression(aalta_formula *predecessor, aalta_formula *edge);
 
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
 
