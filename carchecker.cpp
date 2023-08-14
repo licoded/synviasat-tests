@@ -211,11 +211,24 @@
  	
  	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level)
  	{
- 		while (try_satisfy_at (f, frame_level))
+		int flag = solver_new_var (); //
+ 		while (try_satisfy_at (f, frame_level, flag))
  		{
  			Transition *t = get_transition ();
+			// label, next
+			aalta_formula* dfaNext = fprog(dfaStates_.back (), t.label);
+			if (dfaNextIsFailure(dfaNext, toBlock))
+			{
+				//block label
+				Cube toBolck = t.label;
+				toBlock.push_back (flag);
+				solver_add_clause_from_cube (toBolck);
+				continue;
+			}
  			if (evidence_ != NULL)
  				evidence_ -> push (t->label ());
+			if (dfaStates_ != NULL)
+ 				dfaStates_ -> push (dfaNext);
  			if (frame_level == 0)
  			{
  				if (sat_once (t->next ()))
@@ -226,6 +239,8 @@
  					add_frame_element (frame_level, uc);
 					if(evidence_ != NULL)
 						evidence_->pop_back();
+					if(dfaStates_ != NULL)
+						dfaStates_->pop_back();
  					continue;
  				}
  			}
@@ -234,6 +249,7 @@
  			if (evidence_ != NULL)
  				evidence_ -> pop_back ();
  		}
+		// solver_add_clause (flag); //
  		std::vector<int> uc = get_selected_uc (); 
  		add_frame_element (frame_level+1, uc);
  		return false;
