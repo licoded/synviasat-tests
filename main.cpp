@@ -82,6 +82,29 @@ void test3()
 		checker.print_evidence();
 }
 
+void test4()
+{
+	aalta_formula *f;
+	f = aalta_formula::TAIL();
+	f = aalta_formula("!b & (a U b)", true).unique();
+	aalta_formula *f_raw = f;
+	f = f->nnf();
+	f = f->add_tail();
+	f = f->remove_wnext();
+	f = f->simplify();
+	f = f->split_next();
+
+	aalta_formula *to_block;
+	to_block = aalta_formula("(a U b)", true).unique();
+	Syn_Frame::failure_state.insert(ull((new FormulaInBdd(to_block))->GetBddPointer()));
+
+	CARChecker checker(f, f_raw, true, true);
+	bool res = checker.check();
+	cout << (res ? "sat" : "unsat") << endl;
+	if (res)
+		checker.print_evidence();
+}
+
 int main(int argc, char **argv)
 {
 	// test3();
