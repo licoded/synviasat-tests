@@ -577,6 +577,21 @@ aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int>
     }
 }
 
+aalta_formula *FormulaProgression(aalta_formula *predecessor, aalta_formula *edge)
+{
+    unordered_set<int> edge_set;
+    edge->to_set(edge_set);
+    return FormulaProgression(predecessor, edge_set);
+}
+
+bool need_block(aalta_formula *dfa_state)
+{
+    FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);
+    if (Syn_Frame::failure_state.find(ull(state_in_bdd_->GetBddPointer())) != Syn_Frame::failure_state.end())
+        return true;
+    return false;
+}
+
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y)
 {
     if (end_state == NULL)

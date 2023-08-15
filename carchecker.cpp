@@ -6,6 +6,7 @@
  */
  
  #include "carchecker.h"
+ #include "synthesis.h"
  #include "formula/olg_formula.h"
  #include <iostream>
  using namespace std;
@@ -238,7 +239,43 @@
  		add_frame_element (frame_level+1, uc);
  		return false;
  	}
- 	
+
+ 	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state)
+ 	{
+		int dfa_block_flag = solver_->create_flag_for_dfa_block();
+ 		while (try_satisfy_at (f, frame_level, dfa_block_flag))
+ 		{
+ 			Transition *t = get_transition ();
+			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			if (need_block(dfaNext))
+			{
+				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
+				continue;
+			}
+ 			if (evidence_ != NULL)
+ 				evidence_ -> push (t->label ());
+ 			if (frame_level == 0)
+ 			{
+ 				if (sat_once (t->next (), dfaNext))
+ 					return true;
+ 				else
+ 				{
+ 					std::vector<int> uc = get_selected_uc ();  
+ 					add_frame_element (frame_level, uc);
+					if(evidence_ != NULL)
+						evidence_->pop_back();
+ 					continue;
+ 				}
+ 			}
+  			if (try_satisfy (t->next(), frame_level-1, dfaNext))
+ 				return true;
+ 			if (evidence_ != NULL)
+ 				evidence_ -> pop_back ();
+ 		}
+ 		std::vector<int> uc = get_selected_uc (); 
+ 		add_frame_element (frame_level+1, uc);
+ 		return false;
+ 	}
  	
  	void CARChecker::add_frame_element (int frame_level, std::vector<int>& uc)
  	{
@@ -342,6 +379,27 @@
 				evidence_->push (t->label ());
 				delete t;
 			}
+			return true;
+		}
+		return false;
+ 	}
+
+ 	bool CARChecker::sat_once (aalta_formula* f, aalta_formula *cur_dfa_state)
+ 	{
+ 		if (solver_->check_final (f))
+		{
+			if (evidence_ != NULL)
+			{
+				Transition *t = solver_->get_transition ();
+				assert (t != NULL);
+				evidence_->push (t->label ());
+				delete t;
+			}
+			Transition *t = solver_->get_transition ();
+			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			delete t;
+			if (need_block(dfaNext))
+				return false;
 			return true;
 		}
 		return false;

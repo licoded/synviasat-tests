@@ -22,6 +22,17 @@
 		assumption_.push (SAT_lit (frame_flags_[frame_level]));
 		return solve_assumption ();
  	}
+
+	bool CARSolver::solve_with_assumption (aalta_formula* f, int frame_level, int dfa_block_flag)
+ 	{
+ 		assert (frame_level < frame_flags_.size ());
+ 		assert (!unsat_forever_);
+ 		set_selected_assumption (f);
+		get_assumption_from (f, false);
+		assumption_.push (SAT_lit (frame_flags_[frame_level]));
+		assumption_.push (SAT_lit (dfa_block_flag));
+		return solve_assumption ();
+ 	}
  	
  	void CARSolver::add_clause_for_frame (std::vector<int>& uc, int frame_level)
  	{
@@ -36,11 +47,28 @@
  		v.push_back (-(frame_flags_[frame_level]));
  		add_clause (v);
  	}
+
+	// for synthesis to block dfa state
+	void CARSolver::add_clause_for_flag (aalta_formula *af, int flag)
+ 	{
+		cout << "add clause for flag: " << af->to_string() << "\t" << flag << endl;
+ 		af_prt_set ands = af->to_set();
+ 		std::vector<int> v;
+ 		for (af_prt_set::const_iterator it = ands.begin (); it != ands.end (); it ++)
+ 			v.push_back (-(SAT_id(*it)));
+ 		v.push_back (-flag);
+ 		add_clause (v);
+ 	}
  	
  	void CARSolver::create_flag_for_frame (int frame_level)
 	{
 		assert (frame_flags_.size () == frame_level);
 		frame_flags_.push_back (++max_used_id_);
+	}
+
+	int CARSolver::create_flag_for_dfa_block ()
+	{
+		return ++max_used_id_;
 	}
 	
 	bool CARSolver::check_final (aalta_formula *f)

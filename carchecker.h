@@ -65,7 +65,9 @@ namespace aalta
  		void print_solver_clauses ();
  		
  		void print_frames ();
-		
+
+		void set_dfa_init (aalta_formula *f) {dfa_init_ = f;}
+
 	private:
 		//members
 		typedef std::vector<std::vector<int> > Frame;
@@ -74,12 +76,14 @@ namespace aalta
 		InvSolver *inv_solver_; //SAT solver to check invariant
 		//CARSolver *solver_;
 
+		aalta_formula *dfa_init_;  //the initial state of the DFA
 		
 		//functions
 		//main checking function
 		bool car_check (aalta_formula *f);
 		//try to find a model with the length of \@frame_level
 		bool try_satisfy (aalta_formula *f, int frame_level);
+		bool try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state);
 		//add \@uc to frame \@frame_level
 		void add_frame_element (int frame_level, std::vector<int>& uc);
 		//check whether an invariant can be found in up to \@frame_level steps.
@@ -109,6 +113,11 @@ namespace aalta
  		{
  			return solver_->solve_with_assumption (f, frame_level); //need specialized?
  		}
+
+		inline bool try_satisfy_at (aalta_formula *f, int frame_level, int dfa_block_flag)
+ 		{
+ 			return solver_->solve_with_assumption (f, frame_level, dfa_block_flag); //need specialized?
+ 		}
  	
  		//get a transition from SAT solver.
  		inline Transition* get_transition ()
@@ -125,6 +134,7 @@ namespace aalta
  		
  		//check whether \@ f can be a final state
  		bool sat_once (aalta_formula* f);
+		bool sat_once (aalta_formula* f, aalta_formula *cur_dfs_state);
  		
  		//handle inv_solver_
  		bool solve_inv_at (int frame_level);

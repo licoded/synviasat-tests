@@ -118,6 +118,9 @@ private:
 Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, bool verbose = false);
 
 aalta_formula *FormulaProgression(aalta_formula *predecessor, unordered_set<int> &edge);
+aalta_formula *FormulaProgression(aalta_formula *predecessor, aalta_formula *edge);
+
+bool need_block(aalta_formula *dfa_state);
 
 bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y);
 
