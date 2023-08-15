@@ -46,6 +46,7 @@ public:
     // the bdd pointer of winning/failure state
     static unordered_set<ull> winning_state;
     static unordered_set<ull> failure_state;
+    static list<Syn_Frame *> *searcher;
 
     // from bdd pointer to aalta_formula pointer
     // for blocking failure state

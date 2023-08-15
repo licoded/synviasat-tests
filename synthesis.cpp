@@ -17,6 +17,7 @@ set<int> Syn_Frame::var_X;
 set<int> Syn_Frame::var_Y;
 unordered_set<ull> Syn_Frame::winning_state;
 unordered_set<ull> Syn_Frame::failure_state;
+list<Syn_Frame *> *Syn_Frame::searcher = NULL;
 map<ull, ull> Syn_Frame::bddP_to_afP;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
@@ -51,6 +52,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     Syn_Frame::bddP_to_afP[ull(FormulaInBdd::FALSE_bddP_)] = ull(aalta_formula::FALSE());
 
     list<Syn_Frame *> searcher;
+    Syn_Frame::searcher = &searcher;
     Syn_Frame *init = new Syn_Frame(src_formula); // xnf(src_formula)
     searcher.push_back(init);
     if (verbose)
@@ -587,8 +589,18 @@ aalta_formula *FormulaProgression(aalta_formula *predecessor, aalta_formula *edg
 bool need_block(aalta_formula *dfa_state)
 {
     FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);
+    // block failure_states
     if (Syn_Frame::failure_state.find(ull(state_in_bdd_->GetBddPointer())) != Syn_Frame::failure_state.end())
         return true;
+    // block prefix
+    if (Syn_Frame::searcher != NULL)
+    {
+        for (auto it = Syn_Frame::searcher->begin(); it != Syn_Frame::searcher->end(); it++)
+        {
+            if ((*it)->GetFormulaPointer() == dfa_state)
+                return true;
+        }
+    }
     return false;
 }
 
