@@ -298,17 +298,13 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
     {
         aalta_formula *state = state_in_bdd_->GetFormulaPointer();
         state = aalta_formula(aalta_formula::And, state, X_constraint_).unique();
-        if (IsUnsat(state))
+        aalta_formula *y_reduced = current_Y_;
+        if (!IsUnsat(state))
         {
+            y_reduced = Generalize(state, current_Y_, NULL, NoWay);
             if (verbose)
-                cout << "NoWay: (state & X_constraint_) itself is unsat, so the current state is Unrealizable." << endl;
-            Syn_Frame::failure_state.insert(ull(state_in_bdd_->GetBddPointer()));
-            Syn_Frame::bddP_to_afP[ull(state_in_bdd_->GetBddPointer())] = ull(state_in_bdd_->GetFormulaPointer());
-            break;
+                process_signal_printInfo(signal, current_Y_, y_reduced);
         }
-        aalta_formula *y_reduced = Generalize(state, current_Y_, NULL, NoWay);
-        if (verbose)
-            process_signal_printInfo(signal, current_Y_, y_reduced);
         aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
         Y_constraint_ = (aalta_formula(aalta_formula::And, Y_constraint_, neg_y_reduced).simplify())->unique();
 
@@ -361,13 +357,13 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
              << "constraint of edge: " << edge_constraint->to_string() << endl;
     }
     // aalta_formula *block_formula = ConstructBlockFormula(searcher, edge_constraint);
+    aalta_formula *f_raw = tp_frame->GetFormulaPointer();
     aalta_formula *f;
     if (edge_constraint->oper() != aalta_formula::True)
         f = aalta_formula(aalta_formula::And, tp_frame->GetFormulaPointer(), edge_constraint).unique();
     else
         f = tp_frame->GetFormulaPointer();
     // cout << f->to_string() << endl;
-    aalta_formula *f_raw = f;
     f = f->add_tail();
     f = f->remove_wnext();
     f = f->simplify();
@@ -652,14 +648,20 @@ bool need_block(aalta_formula *dfa_state)
     FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);
     // block failure_states
     if (Syn_Frame::failure_state.find(ull(state_in_bdd_->GetBddPointer())) != Syn_Frame::failure_state.end())
+    {
+        dout << "need block: " << Syn_Frame::get_print_id(state_in_bdd_->GetFormulaPointer()->id()) << endl;
         return true;
+    }
     // block prefix
     if (Syn_Frame::searcher != NULL)
     {
         for (auto it = Syn_Frame::searcher->begin(); it != Syn_Frame::searcher->end(); it++)
         {
             if ((*it)->GetFormulaPointer() == dfa_state)
+            {
+                dout << "need block: " << Syn_Frame::get_print_id(state_in_bdd_->GetFormulaPointer()->id()) << endl;
                 return true;
+            }
         }
     }
     return false;
