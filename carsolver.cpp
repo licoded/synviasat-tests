@@ -51,7 +51,7 @@
 	// for synthesis to block dfa state
 	void CARSolver::add_clause_for_flag (aalta_formula *af, int flag)
  	{
-		cout << "add clause for flag: " << af->to_string() << "\t" << flag << endl;
+		dout << "add clause for flag: " << af->to_string() << "\t" << flag << endl;
  		af_prt_set ands = af->to_set();
  		std::vector<int> v;
  		for (af_prt_set::const_iterator it = ands.begin (); it != ands.end (); it ++)
