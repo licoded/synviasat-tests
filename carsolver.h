@@ -27,6 +27,7 @@ namespace aalta
 		void add_clause_for_frame (std::vector<int>& uc, int frame_level);
 		void add_clause_for_flag (aalta_formula *af, int flag);
 		void create_flag_for_frame (int frame_level);
+		int create_flag_for_dfa_block ();
 		
 		std::vector<int> get_selected_uc ();
 		bool check_final (aalta_formula *f);
