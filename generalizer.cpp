@@ -264,11 +264,12 @@ bool IsUnsat(aalta_formula *phi, aalta_formula::af_prt_set *psi, list<aalta_form
     for (auto it = S.begin(); it != S.end(); ++it)
         phi = aalta_formula(aalta_formula::And, phi, mk_and(*it)).unique();
     phi = aalta_formula(aalta_formula::And, phi, mk_and(&muc)).unique();
+    aalta_formula *phi_raw = phi;
     phi = phi->add_tail();
     phi = phi->remove_wnext();
     phi = phi->simplify();
     phi = phi->split_next();
-    CARChecker checker(phi, false, false);
+    CARChecker checker(phi, phi_raw, false, false);
     return !(checker.check());
 }
 

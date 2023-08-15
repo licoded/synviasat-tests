@@ -313,6 +313,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     else
         f = tp_frame->GetFormulaPointer();
     // cout << f->to_string() << endl;
+    aalta_formula *f_raw = f;
     f = f->add_tail();
     f = f->remove_wnext();
     f = f->simplify();
@@ -324,8 +325,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     long double timeuse;
     // cout << "begin sat solving" << endl;
     gettimeofday(&t1, NULL);
-    CARChecker checker(f, false, true);
-    BlockState(checker, searcher, verbose);
+    CARChecker checker(f, f_raw, false, true);
     bool check_res = checker.check();
     gettimeofday(&t2, NULL);
     timeuse = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0;
