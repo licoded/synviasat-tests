@@ -76,6 +76,12 @@
 		set_selected_assumption (f);
 		return Solver::check_tail (f);
 	}
+
+	bool CARSolver::check_final (aalta_formula *f, int dfa_block_flag)
+	{
+		set_selected_assumption (f);
+		return Solver::check_tail (f, dfa_block_flag);
+	}
 	
 	std::vector<int> CARSolver::get_selected_uc ()
 	{

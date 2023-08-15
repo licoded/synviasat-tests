@@ -421,8 +421,17 @@
 
  	bool CARChecker::sat_once (aalta_formula* f, aalta_formula *cur_dfa_state)
  	{
- 		if (solver_->check_final (f))
+		int dfa_block_flag = solver_->create_flag_for_dfa_block();
+		while (solver_->check_final(f, dfa_block_flag))
 		{
+			Transition *t = solver_->get_transition ();
+			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			if (need_block(dfaNext))
+			{
+				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
+				delete t;
+				continue;
+			}
 			if (evidence_ != NULL)
 			{
 				Transition *t = solver_->get_transition ();
@@ -430,11 +439,6 @@
 				evidence_->push (t->label ());
 				delete t;
 			}
-			Transition *t = solver_->get_transition ();
-			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
-			delete t;
-			if (need_block(dfaNext))
-				return false;
 			return true;
 		}
 		return false;

@@ -42,6 +42,8 @@ public:
 	//solve by taking the assumption in \@assumption_
 	//bool solve_with_assumption ();
 	
+	// for dfaBlock
+	bool check_tail (aalta_formula *f, int dfa_block_flag);
 	//check whether the formula \@ f can be the last state (tail)
 	bool check_tail (aalta_formula *f);
 	//return a pair of <current, next>, which is extracted from the model of SAT solver

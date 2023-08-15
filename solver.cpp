@@ -397,6 +397,30 @@
 	}
 
 	
+	bool Solver::check_tail (aalta_formula *f, int dfa_block_flag)
+	{
+		assert (!unsat_forever_);
+		get_assumption_from (f);
+		assumption_.push (SAT_lit (dfa_block_flag));
+		assumption_.push (SAT_lit (tail_));
+		if (verbose_)
+		{
+			cout << "check_tail: assumption_ is" << endl;
+			for (int i = 0; i < assumption_.size (); i ++)
+				cout << lit_id (assumption_[i]) << ", ";
+			cout << endl;
+		}
+		lbool ret = solveLimited (assumption_);
+		if (ret == l_True)
+		{
+			return true;
+		}
+		else if (ret == l_Undef)
+			exit(0);
+
+		return false;
+	}
+
 	//check whether the formula \@ f can be the last state (tail)
 	bool Solver::check_tail (aalta_formula *f)
 	{

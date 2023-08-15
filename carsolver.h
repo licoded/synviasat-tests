@@ -31,6 +31,7 @@ namespace aalta
 		
 		std::vector<int> get_selected_uc ();
 		bool check_final (aalta_formula *f);
+		bool check_final (aalta_formula *f, int dfa_block_flag);
 	protected:
 		//members
 		//ids to flag each frame, i.e. frame_flags[i] represent the id for frames_[i]
