@@ -52,9 +52,6 @@
 	void CARSolver::add_clause_for_flag (aalta_formula *af, int flag)
  	{
  		af_prt_set ands = af->to_set();
- 		//if there is a conjuct A in f such that (A, X A) is not founded in X_map_, then discard blocking f
- 		if (block_discard_able (ands))
- 			return;
  		std::vector<int> v;
  		for (af_prt_set::const_iterator it = ands.begin (); it != ands.end (); it ++)
  			v.push_back (-SAT_id_of_next (*it));
