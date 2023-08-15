@@ -178,7 +178,7 @@
  		while (true)
  		{
  			tmp_frame_.clear ();
- 			if (try_satisfy (f, frame_level))
+ 			if (try_satisfy (f, frame_level, dfa_init_))
  				return true;
  			if (inv_found (frame_level))
  				return false;
@@ -210,9 +210,8 @@
  		
  	}
  	
- 	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level)
+ 	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state)
  	{
-		aalta_formula *cur_dfa_state;	// TODO: pass as a parameter in try_satisfy() func
 		int dfa_block_flag = solver_->newVar();
  		while (try_satisfy_at (f, frame_level, dfa_block_flag))
  		{
@@ -242,7 +241,7 @@
  					continue;
  				}
  			}
-  			if (try_satisfy (t->next(), frame_level-1))
+  			if (try_satisfy (t->next(), frame_level-1, dfaNext))
  				return true;
  			if (evidence_ != NULL)
  				evidence_ -> pop_back ();

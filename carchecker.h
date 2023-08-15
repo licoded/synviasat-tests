@@ -65,6 +65,8 @@ namespace aalta
  		void print_solver_clauses ();
  		
  		void print_frames ();
+
+		void set_dfa_init (aalta_formula *f) {dfa_init_ = f;}
 		
 	private:
 		//members
@@ -74,12 +76,13 @@ namespace aalta
 		InvSolver *inv_solver_; //SAT solver to check invariant
 		//CARSolver *solver_;
 
+		aalta_formula *dfa_init_;  //the initial state of the DFA
 		
 		//functions
 		//main checking function
 		bool car_check (aalta_formula *f);
 		//try to find a model with the length of \@frame_level
-		bool try_satisfy (aalta_formula *f, int frame_level);
+		bool try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state);
 		//add \@uc to frame \@frame_level
 		void add_frame_element (int frame_level, std::vector<int>& uc);
 		//check whether an invariant can be found in up to \@frame_level steps.

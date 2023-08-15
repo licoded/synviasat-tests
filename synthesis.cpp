@@ -256,9 +256,10 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
     }
     case NoWay:
     {
-        aalta_formula *state = state_in_bdd_->GetFormulaPointer();
-        state = aalta_formula(aalta_formula::And, state, X_constraint_).unique();
-        aalta_formula *y_reduced = Generalize(state, current_Y_, NULL, NoWay);
+        // aalta_formula *state = state_in_bdd_->GetFormulaPointer();
+        // state = aalta_formula(aalta_formula::And, state, X_constraint_).unique();
+        // aalta_formula *y_reduced = Generalize(state, current_Y_, NULL, NoWay);
+        aalta_formula *y_reduced = current_Y_;
         aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
         Y_constraint_ = (aalta_formula(aalta_formula::And, Y_constraint_, neg_y_reduced).simplify())->unique();
 
@@ -327,6 +328,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
     // cout << "begin sat solving" << endl;
     gettimeofday(&t1, NULL);
     CARChecker checker(f, false, true);
+    checker.set_dfa_init(tp_frame->GetFormulaPointer());
     BlockState(checker, searcher, verbose);
     bool check_res = checker.check();
     gettimeofday(&t2, NULL);
