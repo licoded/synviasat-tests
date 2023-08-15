@@ -11,7 +11,14 @@
  #include <iostream>
  using namespace std;
  using namespace Minisat;
- 
+
+ unordered_map<int, string> print_states;
+ string get_print_id(int state_id)
+ {
+	 print_states.insert({state_id, "state__" + to_string(print_states.size() + 1)});
+	 return print_states.at(state_id);
+ }
+
  namespace aalta
  {
  
@@ -285,6 +292,16 @@
 			if (need_block(dfaNext))
 			{
 				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
+				dout << "block because:" << endl
+					 << "\t\t" << get_print_id(cur_dfa_state->id())
+					 << "\t->\t"
+					 << "\t\t" << get_print_id(dfaNext->id())
+					 << endl
+					 << "\t\t" << cur_dfa_state->to_string() << endl
+					 << "\t\t" << dfaNext->to_string() << endl;
+				// dout << "block because:" << endl
+				// 	 << "\t\t" << cur_dfa_state->to_string() << endl
+				// 	 << "\t\t" << dfaNext->to_string() << endl;
 				continue;
 			}
  			if (evidence_ != NULL)
@@ -429,6 +446,16 @@
 			if (need_block(dfaNext))
 			{
 				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
+				dout << "block because:" << endl
+					 << "\t\t" << get_print_id(cur_dfa_state->id())
+					 << "\t->\t"
+					 << "\t\t" << get_print_id(dfaNext->id())
+					 << endl
+					 << "\t\t" << cur_dfa_state->to_string() << endl
+					 << "\t\t" << dfaNext->to_string() << endl;
+				// dout << "block because:" << endl
+				// 	 << "\t\t" << cur_dfa_state->to_string() << endl
+				// 	 << "\t\t" << dfaNext->to_string() << endl;
 				delete t;
 				continue;
 			}
