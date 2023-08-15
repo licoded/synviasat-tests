@@ -361,15 +361,17 @@
  	{
  		if (solver_->check_final (f))
 		{
-			Transition *t = solver_->get_transition ();
 			if (evidence_ != NULL)
 			{
+				Transition *t = solver_->get_transition ();
 				assert (t != NULL);
 				evidence_->push (t->label ());
 				delete t;
 			}
+			Transition *t = solver_->get_transition ();
 			// TODO: confirm t->label() only contains literals, otherwise it will causes errors
 			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			delete t;
 			if (need_block(dfaNext))	// there is a implicit param block_dfa_states in dfaNextIsFailure() func
 				return false;
 			return true;
