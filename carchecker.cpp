@@ -152,6 +152,8 @@
 		 	return (ret == SAT ? true : false);
 		 
 		
+		 if (dfa_init_ != NULL)
+			return car_check_dfaBlock (to_check_);
 		 return car_check (to_check_);
  	 }
  	
@@ -187,8 +189,41 @@
  		}
  		return false;	
  	}
- 	
- 	void CARChecker::add_new_frame ()
+
+	bool CARChecker::car_check_dfaBlock (aalta_formula *f)
+	{
+		if (sat_once (f))
+		{
+			if (verbose_)
+				cout << "sat once is true, return from here\n";
+			return true;
+		}
+		else if (f->is_global ())
+		{
+			push_formula_to_explored (f);
+			return false;
+		}
+
+		//initialize the first frame
+		std::vector<int> uc = get_selected_uc ();
+		tmp_frame_.push_back (uc);
+		add_new_frame ();
+
+		int frame_level = 0;
+		while (true)
+		{
+			tmp_frame_.clear ();
+			if (try_satisfy (f, frame_level, dfa_init_))
+				return true;
+			if (inv_found (frame_level))
+				return false;
+			add_new_frame ();
+			frame_level ++;
+		}
+		return false;
+	}
+
+	void CARChecker::add_new_frame ()
  	{
  		frames_.push_back (tmp_frame_);
  		solver_add_new_frame ();
@@ -256,7 +291,7 @@
  				evidence_ -> push (t->label ());
  			if (frame_level == 0)
  			{
- 				if (sat_once (t->next (), dfaNext))
+ 				if (sat_once (t->next ()))
  					return true;
  				else
  				{

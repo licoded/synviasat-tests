@@ -44,7 +44,13 @@ namespace aalta
 	{
 	public:
 		
-		CARChecker (aalta_formula *f, bool verbose = false, bool evidence = false) : LTLfChecker (f, verbose, evidence), inv_solver_ (NULL)
+		CARChecker (aalta_formula *f, bool verbose = false, bool evidence = false) : LTLfChecker (f, verbose, evidence), inv_solver_ (NULL), dfa_init_ (NULL)
+		{
+			//inv_solver_ = new InvSolver (to_check_->id(), verbose_);
+		}
+
+		CARChecker (aalta_formula *f, aalta_formula *f_raw, bool verbose = false, bool evidence = false)
+			: LTLfChecker (f, verbose, evidence), inv_solver_ (NULL), dfa_init_ (f_raw)
 		{	
 			//inv_solver_ = new InvSolver (to_check_->id(), verbose_);
 		}
@@ -81,6 +87,7 @@ namespace aalta
 		//functions
 		//main checking function
 		bool car_check (aalta_formula *f);
+		bool car_check_dfaBlock (aalta_formula *f);
 		//try to find a model with the length of \@frame_level
 		bool try_satisfy (aalta_formula *f, int frame_level);
 		bool try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state);
