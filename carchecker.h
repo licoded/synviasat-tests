@@ -129,6 +129,7 @@ namespace aalta
  		
  		//check whether \@ f can be a final state
  		bool sat_once (aalta_formula* f);
+		bool sat_once (aalta_formula* f, aalta_formula *cur_dfs_state);
  		
  		//handle inv_solver_
  		bool solve_inv_at (int frame_level);

@@ -157,7 +157,7 @@
  	
  	bool CARChecker::car_check (aalta_formula* f)
  	{
- 		if (sat_once (f))
+ 		if (sat_once (f, dfa_init_))
 		{
 			if (verbose_)
 				cout << "sat once is true, return from here\n";
@@ -228,7 +228,7 @@
  				evidence_ -> push (t->label ());
  			if (frame_level == 0)
  			{
- 				if (sat_once (t->next ()))
+ 				if (sat_once (t->next (), dfaNext))
  					return true;
  				else
  				{
@@ -352,6 +352,26 @@
 				evidence_->push (t->label ());
 				delete t;
 			}
+			return true;
+		}
+		return false;
+ 	}
+
+ 	bool CARChecker::sat_once (aalta_formula* f, aalta_formula *cur_dfa_state)
+ 	{
+ 		if (solver_->check_final (f))
+		{
+			Transition *t = solver_->get_transition ();
+			if (evidence_ != NULL)
+			{
+				assert (t != NULL);
+				evidence_->push (t->label ());
+				delete t;
+			}
+			// TODO: confirm t->label() only contains literals, otherwise it will causes errors
+			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
+			if (need_block(dfaNext))	// there is a implicit param block_dfa_states in dfaNextIsFailure() func
+				return false;
 			return true;
 		}
 		return false;
