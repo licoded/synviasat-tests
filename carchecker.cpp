@@ -199,7 +199,7 @@
 
 	bool CARChecker::car_check_dfaBlock (aalta_formula *f)
 	{
-		if (sat_once (f, dfa_init_))
+		if (sat_once (f))
 		{
 			if (verbose_)
 				cout << "sat once is true, return from here\n";
@@ -305,7 +305,7 @@
  				evidence_ -> push (t->label ());
  			if (frame_level == 0)
  			{
- 				if (sat_once (t->next (), dfaNext))
+ 				if (sat_once (t->next ()))
  					return true;
  				else
  				{
