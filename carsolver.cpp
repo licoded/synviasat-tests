@@ -67,6 +67,11 @@
 		assert (frame_flags_.size () == frame_level);
 		frame_flags_.push_back (++max_used_id_);
 	}
+
+	int CARSolver::create_flag_for_dfa_block ()
+	{
+		return ++max_used_id_;
+	}
 	
 	bool CARSolver::check_final (aalta_formula *f)
 	{

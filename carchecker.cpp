@@ -212,7 +212,7 @@
  	
  	bool CARChecker::try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state)
  	{
-		int dfa_block_flag = solver_->newVar();
+		int dfa_block_flag = solver_->create_flag_for_dfa_block();
  		while (try_satisfy_at (f, frame_level, dfa_block_flag))
  		{
  			Transition *t = get_transition ();
