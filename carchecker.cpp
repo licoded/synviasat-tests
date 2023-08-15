@@ -220,10 +220,8 @@
 			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
 			if (need_block(dfaNext))	// there is a implicit param block_dfa_states in dfaNextIsFailure() func
 			{
-				vector<int> label_vec;
-				t->label()->to_vec(label_vec);
-				// TODO: confirm whether the (a, Xa) check in add_clause_for_frame() func is OK for our usage
-				solver_->add_clause_for_frame (label_vec, dfa_block_flag);
+				// TODO: confirm whether the (a, Xa) check in add_clause_for_flag() func is OK for our usage
+				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
 				continue;
 			}
  			if (evidence_ != NULL)
