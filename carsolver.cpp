@@ -28,9 +28,9 @@
  		assert (frame_level < frame_flags_.size ());
  		assert (!unsat_forever_);
  		set_selected_assumption (f);
+		selected_assumption_.insert (dfa_block_flag);
 		get_assumption_from (f, false);
 		assumption_.push (SAT_lit (frame_flags_[frame_level]));
-		assumption_.push (SAT_lit (dfa_block_flag));
 		return solve_assumption ();
  	}
  	
