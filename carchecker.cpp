@@ -323,6 +323,7 @@
  		}
  		std::vector<int> uc = get_selected_uc (); 
  		add_frame_element (frame_level+1, uc);
+		solver_->add_clause(-dfa_block_flag);
  		return false;
  	}
  	
