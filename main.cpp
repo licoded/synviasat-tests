@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 
 	// perform synthesis
 	// bool result = is_realizable(af, env_var, t1);
-	bool result = is_realizable(af, env_var, t1, false);
+	bool result = is_realizable(af, env_var, t1, true);
 	if (result)
 		cout << "Realizable" << endl;
 	else
