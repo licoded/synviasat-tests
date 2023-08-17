@@ -7,6 +7,7 @@
  
  #include "carchecker.h"
  #include "synthesis.h"
+ #include "generalizer.h"
  #include "formula/olg_formula.h"
  #include <iostream>
  using namespace std;
@@ -291,7 +292,8 @@
 			aalta_formula* dfaNext = FormulaProgression(cur_dfa_state, t->label());
 			if (need_block(dfaNext))
 			{
-				solver_->add_clause_for_flag (t->label(), dfa_block_flag);
+				aalta_formula *label_reduced = Generalize_trans_edge(cur_dfa_state, dfaNext, t->label());
+				solver_->add_clause_for_flag (label_reduced, dfa_block_flag);
 				dout << "block because:" << endl
 					 << "\t\t" << get_print_id(cur_dfa_state->id())
 					 << "\t->\t"

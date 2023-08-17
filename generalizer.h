@@ -26,6 +26,7 @@ typedef enum
 typedef Ternary (*Simulate)(aalta_formula *state, unordered_set<int> &save, unordered_set<int> &to_reduce, unordered_set<int> &reduced, int test_lit);
 
 aalta_formula *Generalize(aalta_formula *state, aalta_formula *Y, aalta_formula *X, Signal signal);
+aalta_formula *Generalize_trans_edge(aalta_formula *cur_dfa_state, aalta_formula *dfaNext, aalta_formula *edge);
 
 Ternary CheckCompleteY(aalta_formula *state, unordered_set<int> &Y);
 

@@ -183,6 +183,15 @@ aalta_formula *Generalize(aalta_formula *state, aalta_formula *Y, aalta_formula 
     }
 }
 
+// NOTE: dfaNext param is not used
+aalta_formula *Generalize_trans_edge(aalta_formula *cur_dfa_state, aalta_formula *dfaNext, aalta_formula *edge)
+{
+    unordered_set<int> to_reduce, save;
+    edge->to_set(to_reduce);
+    aalta_formula *edge_reduced = Generalize_(cur_dfa_state, save, to_reduce, TestFprog);
+    return edge_reduced;
+}
+
 Ternary CheckCompleteY(aalta_formula *state, unordered_set<int> &Y)
 {
     assert(state != NULL);
