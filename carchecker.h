@@ -91,6 +91,7 @@ namespace aalta
 		//try to find a model with the length of \@frame_level
 		bool try_satisfy (aalta_formula *f, int frame_level);
 		bool try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state);
+		bool try_satisfy (aalta_formula *f, int frame_level, aalta_formula *cur_dfa_state, bool &empty_uc);
 		//add \@uc to frame \@frame_level
 		void add_frame_element (int frame_level, std::vector<int>& uc);
 		//check whether an invariant can be found in up to \@frame_level steps.
