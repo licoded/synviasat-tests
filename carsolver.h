@@ -29,7 +29,7 @@ namespace aalta
 		void create_flag_for_frame (int frame_level);
 		int create_flag_for_dfa_block ();
 		
-		std::vector<int> get_selected_uc ();
+		std::vector<int> get_selected_uc (bool canEmpty = false);
 		bool check_final (aalta_formula *f);
 	protected:
 		//members

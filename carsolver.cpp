@@ -28,7 +28,6 @@
  		assert (frame_level < frame_flags_.size ());
  		assert (!unsat_forever_);
  		set_selected_assumption (f);
-		selected_assumption_.insert(dfa_block_flag);
 		get_assumption_from (f, false);
 		assumption_.push (SAT_lit (frame_flags_[frame_level]));
 		assumption_.push (SAT_lit (dfa_block_flag));
@@ -78,7 +77,7 @@
 		return Solver::check_tail (f);
 	}
 	
-	std::vector<int> CARSolver::get_selected_uc ()
+	std::vector<int> CARSolver::get_selected_uc (bool canEmpty)
 	{
 		std::vector<int> uc = get_uc ();
 		std::vector<int> res;
@@ -94,7 +93,7 @@
 				cout << res[i] << ", ";
 			cout << endl;
 		}
-		assert (!res.empty ());
+		assert (canEmpty || !res.empty ());
 		return res;
 	} 
 	

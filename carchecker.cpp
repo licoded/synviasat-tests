@@ -323,10 +323,10 @@
  			if (evidence_ != NULL)
  				evidence_ -> pop_back ();
  		}
- 		std::vector<int> uc = get_selected_uc (); 
-		if (uc.size() == 1 && uc[0] == dfa_block_flag)
-			// replace by SAT_id of f
-			uc[0] = (f->oper () == aalta_formula::Not) ? (-f->r_af ()->id ()) : f->id ();
+ 		std::vector<int> uc = get_selected_uc_dfaBlock (); 
+		if (uc.empty())
+			// SAT_id of f
+			uc.push_back( (f->oper () == aalta_formula::Not) ? (-f->r_af ()->id ()) : f->id () );
  		add_frame_element (frame_level+1, uc);
 		solver_->add_clause(-dfa_block_flag);
  		return false;

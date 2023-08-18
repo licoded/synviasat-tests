@@ -114,6 +114,11 @@ namespace aalta
 		{
 			return solver_->get_selected_uc ();
 		}
+
+		inline std::vector<int> get_selected_uc_dfaBlock () 
+		{
+			return solver_->get_selected_uc (true);
+		}
 		
 		//check whether \@f has a next state that can block constraints at level \@frame_level
 		inline bool try_satisfy_at (aalta_formula *f, int frame_level)
