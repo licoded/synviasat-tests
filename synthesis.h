@@ -124,6 +124,7 @@ public:
     inline void SetTraceBeginning() { is_trace_beginning_ = true; }
 
     void init_X_base();
+    void reset_X_base_flag() { X_base_init_flag_ = false; }
 
     void PrintInfo();
 
@@ -139,6 +140,7 @@ private:
     aalta_formula *X_constraint_;
 
     aalta_formula *X_base_;
+    bool X_base_init_flag_;
 
     aalta_formula *current_Y_;
     aalta_formula *current_X_;

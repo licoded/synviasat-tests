@@ -160,7 +160,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             Syn_Frame::insert_winning_state(cur_frame->GetBddPointer());
             delete cur_frame;
             searcher.pop_back();
-            (searcher.back())->init_X_base();
+            (searcher.back())->reset_X_base_flag();
             (searcher.back())->process_signal(To_winning_state, verbose);
             break;
         }
@@ -187,7 +187,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
             // encounter Unrealizable
             // backtrack only the failure/unrealizable state
-            (searcher.back())->init_X_base();
+            (searcher.back())->reset_X_base_flag();
             (searcher.back())->process_signal(To_failure_state, verbose);
             break;
         }
@@ -210,13 +210,18 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
 void Syn_Frame::init_X_base()
 {
+    if (X_base_init_flag_)
+        return;
+    X_base_init_flag_ = true;
+    aalta_formula *old_X_base_ = X_base_;
     X_base_ = Syn_Frame::get_Xbase(state_in_bdd_->GetFormulaPointer());
 }
 
 Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
-    init_X_base();
+    X_base_ = aalta_formula::TRUE();
+    reset_X_base_flag();
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
@@ -464,6 +469,7 @@ void Syn_Frame::SetTravelDirection(aalta_formula *Y, aalta_formula *X)
 Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, bool verbose)
 {
     Syn_Frame *tp_frame = searcher.back();
+    tp_frame->init_X_base();
     aalta_formula *edge_constraint = tp_frame->GetEdgeConstraint();
     if (verbose)
     {
@@ -593,7 +599,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 Syn_Frame::insert_winning_state((searcher.back())->GetBddPointer());
                 delete searcher.back();
                 searcher.pop_back();
-                (searcher.back())->init_X_base();
+                (searcher.back())->reset_X_base_flag();
                 (searcher.back())->process_signal(To_winning_state, verbose);
             }
         }
@@ -638,7 +644,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 Syn_Frame::insert_failure_state(searcher.back());
                 delete (searcher.back());
                 searcher.pop_back();
-                (searcher.back())->init_X_base();
+                (searcher.back())->reset_X_base_flag();
                 (searcher.back())->process_signal(To_failure_state, verbose);
             }
         }
