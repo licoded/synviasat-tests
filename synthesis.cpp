@@ -731,6 +731,13 @@ bool BaseWinningAtY(aalta_formula *end_state, unordered_set<int> &Y)
         return BaseWinningAtY(end_state->r_af(), Y);
 }
 
+bool BaseWinningAtY(aalta_formula *end_state, aalta_formula *edge_af)
+{
+    unordered_set<int> edge;
+    edge_af->to_set(edge);
+    return BaseWinningAtY(end_state, edge);
+}
+
 bool repeat_with_prefix(list<Syn_Frame *> &prefix, aalta_formula *dfa_state, bool verbose)
 {
     FormulaInBdd *state_in_bdd_ = new FormulaInBdd(dfa_state);
@@ -906,23 +913,11 @@ bool RepeatState(list<Syn_Frame *> &prefix, DdNode *state)
 
 void Syn_Frame::calc_X_base()
 {
-    unordered_set<int> x_edge;
-
-    x_edge.clear();
-    current_X_->to_set(x_edge);
-    if (!BaseWinningAtY(state_in_bdd_->GetFormulaPointer(), x_edge))
+    if (!BaseWinningAtY(state_in_bdd_->GetFormulaPointer(), current_X_))
         return;
 
     aalta_formula *x_reduced = Generalize(state_in_bdd_->GetFormulaPointer(), aalta_formula::TRUE(), current_X_, Accepting_edge);
-
-    x_edge.clear();
-    x_reduced->to_set(x_edge);
-    if (!BaseWinningAtY(state_in_bdd_->GetFormulaPointer(), x_edge))
-    {
-        cout << "ERROR(maybe): BaseWinningAtY failed after Generalize(Accepting_edge) in calc_X_base." << endl
-             << "\t\tIs TestFprog for Generalize(Accepting_edge) wrong?" << endl;
-        return;
-    }
+    assert(BaseWinningAtY(state_in_bdd_->GetFormulaPointer(), x_reduced));
 
     aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
     X_base_ = (aalta_formula(aalta_formula::And, X_base_, neg_x_reduced).simplify())->unique();
