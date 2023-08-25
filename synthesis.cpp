@@ -38,9 +38,10 @@ void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
     bool found_flag = false;
     for (auto it = bddP_to_Xbase.begin(); it != bddP_to_Xbase.end(); ++it)
     {
-        if (!FormulaInBdd::Implies((DdNode *)(it->first), state_bddP))
+        if (!FormulaInBdd::Implies(state_bddP, (DdNode *)(it->first)))
             continue;
-        found_flag = true;
+        if ((ull)state_bddP == (ull)(it->first));
+            found_flag = true;
         aalta_formula *old_Xbase = (aalta_formula *)(it->second);
         Syn_Frame::bddP_to_Xbase[(it->first)] = (ull)(aalta_formula(aalta_formula::Or, old_Xbase, Xbase).unique());
     }
