@@ -208,6 +208,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             delete cur_frame;
             searcher.pop_back();
             (searcher.back())->reset_X_base_flag();
+            (searcher.back())->reset_Y_failure_flag();
             (searcher.back())->process_signal(To_winning_state, verbose);
             break;
         }
@@ -235,6 +236,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             // encounter Unrealizable
             // backtrack only the failure/unrealizable state
             (searcher.back())->reset_X_base_flag();
+            (searcher.back())->reset_Y_failure_flag();
             (searcher.back())->process_signal(To_failure_state, verbose);
             break;
         }
@@ -274,11 +276,32 @@ void Syn_Frame::init_X_base()
     // }
 }
 
+void Syn_Frame::init_Y_failure()
+{
+    if (Y_failure_init_flag_)
+        return;
+    Y_failure_init_flag_ = true;
+    // aalta_formula *old_Y_failure_ = Y_failure_;
+    Y_failure_ = Syn_Frame::get_Yfailure(state_in_bdd_->GetFormulaPointer());
+    // if (old_Y_failure_ == NULL && ull(Y_failure_) != ull(aalta_formula::TRUE()))
+    // {
+    //     cout << "init Y base:\t" << Y_failure_->to_string() << endl;
+    // }
+    // if (old_Y_failure_ != NULL && ull(FormulaInBdd(old_Y_failure_).GetBddPointer()) != ull(FormulaInBdd(Y_failure_).GetBddPointer()))
+    // {
+    //     cout << "init Y base" << endl;
+    //     cout << "\t\t before:\t" << old_Y_failure_->to_string() << endl;
+    //     cout << "\t\t after:\t" << Y_failure_->to_string() << endl;
+    // }
+}
+
 Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
     X_base_ = aalta_formula::TRUE();
     reset_X_base_flag();
+    Y_failure_ = aalta_formula::TRUE();
+    reset_Y_failure_flag();
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
@@ -436,6 +459,7 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
         aalta_formula *y_reduced = Generalize(state_in_bdd_->GetFormulaPointer(), current_Y_, current_X_, To_failure_state);
         if (verbose)
             process_signal_printInfo(signal, current_Y_, y_reduced);
+        Syn_Frame::insert_Yfailure(state_in_bdd_->GetFormulaPointer(), y_reduced);
         aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
         Y_constraint_ = (aalta_formula(aalta_formula::And, Y_constraint_, neg_y_reduced).simplify())->unique();
 
@@ -527,6 +551,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
 {
     Syn_Frame *tp_frame = searcher.back();
     tp_frame->init_X_base();
+    tp_frame->init_Y_failure();
     aalta_formula *edge_constraint = tp_frame->GetEdgeConstraint();
     if (verbose)
     {
@@ -657,6 +682,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 delete searcher.back();
                 searcher.pop_back();
                 (searcher.back())->reset_X_base_flag();
+                (searcher.back())->reset_Y_failure_flag();
                 (searcher.back())->process_signal(To_winning_state, verbose);
             }
         }
@@ -702,6 +728,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 delete (searcher.back());
                 searcher.pop_back();
                 (searcher.back())->reset_X_base_flag();
+                (searcher.back())->reset_Y_failure_flag();
                 (searcher.back())->process_signal(To_failure_state, verbose);
             }
         }

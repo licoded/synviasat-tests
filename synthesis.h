@@ -130,6 +130,9 @@ public:
     void init_X_base();
     void reset_X_base_flag() { X_base_init_flag_ = false; }
 
+    void init_Y_failure();
+    void reset_Y_failure_flag() { Y_failure_init_flag_ = false; }
+
     void PrintInfo();
 
 private:
@@ -145,6 +148,9 @@ private:
 
     aalta_formula *X_base_;
     bool X_base_init_flag_;
+
+    aalta_formula *Y_failure_;
+    bool Y_failure_init_flag_;
 
     aalta_formula *current_Y_;
     aalta_formula *current_X_;
