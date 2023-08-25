@@ -35,6 +35,7 @@ long double Syn_Frame::average_sat_time;
 void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
 {
     ull bddP_ull = ull(FormulaInBdd(state).GetBddPointer());
+    // TODO: imply -> add in or, then can delete else branch
     if (Syn_Frame::bddP_to_Xbase.count(bddP_ull) == 0)
         Syn_Frame::bddP_to_Xbase[bddP_ull] = ull(Xbase);
     else
@@ -44,13 +45,12 @@ void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
 aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
 {
     aalta_formula *Xbase = aalta_formula::TRUE();
-    aalta_formula::af_prt_set state_or_set = state->to_or_set();
-    for (auto it = state_or_set.begin(); it != state_or_set.end(); ++it)
+    DdNode *state_bddP = FormulaInBdd(state).GetBddPointer();
+    for (auto it = bddP_to_Xbase.begin(); it != bddP_to_Xbase.end(); ++it)
     {
-        ull bddP_ull = ull(FormulaInBdd((*it)).GetBddPointer());
-        if (Syn_Frame::bddP_to_Xbase.count(bddP_ull) == 0)
+        if (!FormulaInBdd::Implies((DdNode *)(it->first), state_bddP))
             continue;
-        aalta_formula *Xbase4it = (aalta_formula *)Syn_Frame::bddP_to_Xbase[bddP_ull];
+        aalta_formula *Xbase4it = (aalta_formula *)(it->second);
         aalta_formula *neg_Xbase4it = aalta_formula(aalta_formula::Not, NULL, Xbase4it).nnf();
         Xbase = (aalta_formula(aalta_formula::And, Xbase, neg_Xbase4it).simplify())->unique();
     }
