@@ -34,12 +34,18 @@ long double Syn_Frame::average_sat_time;
 
 void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
 {
-    ull bddP_ull = ull(FormulaInBdd(state).GetBddPointer());
-    // TODO: imply -> add in or, then can delete else branch
-    if (Syn_Frame::bddP_to_Xbase.count(bddP_ull) == 0)
-        Syn_Frame::bddP_to_Xbase[bddP_ull] = ull(Xbase);
-    else
-        Syn_Frame::bddP_to_Xbase[bddP_ull] = (ull)(aalta_formula(aalta_formula::Or, (aalta_formula *)Syn_Frame::bddP_to_Xbase[bddP_ull], Xbase).unique());
+    DdNode *state_bddP = FormulaInBdd(state).GetBddPointer();
+    bool found_flag = false;
+    for (auto it = bddP_to_Xbase.begin(); it != bddP_to_Xbase.end(); ++it)
+    {
+        if (!FormulaInBdd::Implies((DdNode *)(it->first), state_bddP))
+            continue;
+        found_flag = true;
+        aalta_formula *old_Xbase = (aalta_formula *)(it->second);
+        Syn_Frame::bddP_to_Xbase[(it->first)] = (ull)(aalta_formula(aalta_formula::Or, old_Xbase, Xbase).unique());
+    }
+    if (!found_flag)
+        Syn_Frame::bddP_to_Xbase[(ull)state_bddP] = ull(Xbase);
 }
 
 aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
