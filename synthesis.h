@@ -73,6 +73,10 @@ public:
     static void insert_Xbase(aalta_formula *state, aalta_formula *Xbase);
     static aalta_formula *get_Xbase(aalta_formula *state);
 
+    static map<ull, ull> bddP_to_Yfailure;
+    static void insert_Yfailure(aalta_formula *state, aalta_formula *Yfailure);
+    static aalta_formula *get_Yfailure(aalta_formula *state);
+
     static int sat_call_cnt;
     static long double average_sat_time;
 

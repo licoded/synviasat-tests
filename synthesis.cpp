@@ -29,6 +29,7 @@ vector<DdNode *> Syn_Frame::winning_state_vec;
 vector<DdNode *> Syn_Frame::failure_state_vec;
 map<ull, ull> Syn_Frame::bddP_to_afP;
 map<ull, ull> Syn_Frame::bddP_to_Xbase;
+map<ull, ull> Syn_Frame::bddP_to_Yfailure;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
 
@@ -62,6 +63,40 @@ aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
         Xbase = (aalta_formula(aalta_formula::And, Xbase, neg_Xbase4it).simplify())->unique();
     }
     return Xbase;
+}
+
+void Syn_Frame::insert_Yfailure(aalta_formula *state, aalta_formula *Yfailure)
+{
+    DdNode *state_bddP = FormulaInBdd(state).GetBddPointer();
+    bool found_flag = false;
+    for (auto it = bddP_to_Yfailure.begin(); it != bddP_to_Yfailure.end(); ++it)
+    {
+        if (!FormulaInBdd::Implies((DdNode *)(it->first), state_bddP))
+            continue;
+        if ((ull)state_bddP == (ull)(it->first));
+            found_flag = true;
+        aalta_formula *old_Yfailure = (aalta_formula *)(it->second);
+        Syn_Frame::bddP_to_Yfailure[(it->first)] = (ull)(aalta_formula(aalta_formula::Or, old_Yfailure, Yfailure).unique());
+    }
+    if (!found_flag)
+        Syn_Frame::bddP_to_Yfailure[(ull)state_bddP] = ull(Yfailure);
+}
+
+aalta_formula *Syn_Frame::get_Yfailure(aalta_formula *state)
+{
+    aalta_formula *Yfailure = aalta_formula::TRUE();
+    DdNode *state_bddP = FormulaInBdd(state).GetBddPointer();
+    for (auto it = bddP_to_Yfailure.begin(); it != bddP_to_Yfailure.end(); ++it)
+    {
+        //   A      --> edge-->        A`           A` is failure state
+        // A /\ B   --> edge-->     A` /\ B`        A` /\ B` is also failure state, since A` is failure state
+        if (!FormulaInBdd::Implies(state_bddP, (DdNode *)(it->first)))
+            continue;
+        aalta_formula *Yfailure4it = (aalta_formula *)(it->second);
+        aalta_formula *neg_Yfailure4it = aalta_formula(aalta_formula::Not, NULL, Yfailure4it).nnf();
+        Yfailure = (aalta_formula(aalta_formula::And, Yfailure, neg_Yfailure4it).simplify())->unique();
+    }
+    return Yfailure;
 }
 
 void Syn_Frame::insert_winning_state(DdNode *bddP)
