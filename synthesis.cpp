@@ -34,7 +34,11 @@ long double Syn_Frame::average_sat_time;
 
 void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
 {
-    Syn_Frame::bddP_to_Xbase[ull(FormulaInBdd(state).GetBddPointer())] = ull(Xbase);
+    ull bddP_ull = ull(FormulaInBdd(state).GetBddPointer());
+    if (Syn_Frame::bddP_to_Xbase.count(bddP_ull) == 0)
+        Syn_Frame::bddP_to_Xbase[bddP_ull] = ull(Xbase);
+    else
+        Syn_Frame::bddP_to_Xbase[bddP_ull] = (ull)(aalta_formula(aalta_formula::Or, (aalta_formula *)Syn_Frame::bddP_to_Xbase[bddP_ull], Xbase).unique());
 }
 
 aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
@@ -43,9 +47,10 @@ aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
     aalta_formula::af_prt_set state_or_set = state->to_or_set();
     for (auto it = state_or_set.begin(); it != state_or_set.end(); ++it)
     {
-        aalta_formula *Xbase4it = (aalta_formula *)Syn_Frame::bddP_to_Xbase[ull(FormulaInBdd((*it)).GetBddPointer())];
-        if (Xbase4it == NULL)
+        ull bddP_ull = ull(FormulaInBdd((*it)).GetBddPointer());
+        if (Syn_Frame::bddP_to_Xbase.count(bddP_ull) == 0)
             continue;
+        aalta_formula *Xbase4it = (aalta_formula *)Syn_Frame::bddP_to_Xbase[bddP_ull];
         aalta_formula *neg_Xbase4it = aalta_formula(aalta_formula::Not, NULL, Xbase4it).nnf();
         Xbase = (aalta_formula(aalta_formula::And, Xbase, neg_Xbase4it).simplify())->unique();
     }
@@ -213,8 +218,18 @@ void Syn_Frame::init_X_base()
     if (X_base_init_flag_)
         return;
     X_base_init_flag_ = true;
-    aalta_formula *old_X_base_ = X_base_;
+    // aalta_formula *old_X_base_ = X_base_;
     X_base_ = Syn_Frame::get_Xbase(state_in_bdd_->GetFormulaPointer());
+    // if (old_X_base_ == NULL && ull(X_base_) != ull(aalta_formula::TRUE()))
+    // {
+    //     cout << "init X base:\t" << X_base_->to_string() << endl;
+    // }
+    // if (old_X_base_ != NULL && ull(FormulaInBdd(old_X_base_).GetBddPointer()) != ull(FormulaInBdd(X_base_).GetBddPointer()))
+    // {
+    //     cout << "init X base" << endl;
+    //     cout << "\t\t before:\t" << old_X_base_->to_string() << endl;
+    //     cout << "\t\t after:\t" << X_base_->to_string() << endl;
+    // }
 }
 
 Syn_Frame::Syn_Frame(aalta_formula *af)
