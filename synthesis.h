@@ -69,6 +69,10 @@ public:
     // for blocking failure state
     static map<ull, ull> bddP_to_afP;
 
+    static map<ull, ull> bddP_to_Xbase;
+    static void insert_Xbase(aalta_formula *state, aalta_formula *Xbase);
+    static aalta_formula *get_Xbase(aalta_formula *state);
+
     static int sat_call_cnt;
     static long double average_sat_time;
 
@@ -118,6 +122,8 @@ public:
     }
 
     inline void SetTraceBeginning() { is_trace_beginning_ = true; }
+
+    void init_X_base();
 
     void PrintInfo();
 

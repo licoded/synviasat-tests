@@ -28,8 +28,29 @@ unordered_set<ull> Syn_Frame::failure_state;
 vector<DdNode *> Syn_Frame::winning_state_vec;
 vector<DdNode *> Syn_Frame::failure_state_vec;
 map<ull, ull> Syn_Frame::bddP_to_afP;
+map<ull, ull> Syn_Frame::bddP_to_Xbase;
 int Syn_Frame::sat_call_cnt;
 long double Syn_Frame::average_sat_time;
+
+void Syn_Frame::insert_Xbase(aalta_formula *state, aalta_formula *Xbase)
+{
+    Syn_Frame::bddP_to_Xbase[ull(FormulaInBdd(state).GetBddPointer())] = ull(Xbase);
+}
+
+aalta_formula *Syn_Frame::get_Xbase(aalta_formula *state)
+{
+    aalta_formula *Xbase = aalta_formula::TRUE();
+    aalta_formula::af_prt_set state_or_set = state->to_or_set();
+    for (auto it = state_or_set.begin(); it != state_or_set.end(); ++it)
+    {
+        aalta_formula *Xbase4it = (aalta_formula *)Syn_Frame::bddP_to_Xbase[ull(FormulaInBdd((*it)).GetBddPointer())];
+        if (Xbase4it == NULL)
+            continue;
+        aalta_formula *neg_Xbase4it = aalta_formula(aalta_formula::Not, NULL, Xbase4it).nnf();
+        Xbase = (aalta_formula(aalta_formula::And, Xbase, neg_Xbase4it).simplify())->unique();
+    }
+    return Xbase;
+}
 
 void Syn_Frame::insert_winning_state(DdNode *bddP)
 {
@@ -139,6 +160,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
             Syn_Frame::insert_winning_state(cur_frame->GetBddPointer());
             delete cur_frame;
             searcher.pop_back();
+            (searcher.back())->init_X_base();
             (searcher.back())->process_signal(To_winning_state, verbose);
             break;
         }
@@ -165,6 +187,7 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
 
             // encounter Unrealizable
             // backtrack only the failure/unrealizable state
+            (searcher.back())->init_X_base();
             (searcher.back())->process_signal(To_failure_state, verbose);
             break;
         }
@@ -185,10 +208,15 @@ bool is_realizable(aalta_formula *src_formula, unordered_set<string> &env_var, c
     }
 }
 
+void Syn_Frame::init_X_base()
+{
+    X_base_ = Syn_Frame::get_Xbase(state_in_bdd_->GetFormulaPointer());
+}
+
 Syn_Frame::Syn_Frame(aalta_formula *af)
 {
     state_in_bdd_ = new FormulaInBdd(af);
-    X_base_ = aalta_formula::TRUE();
+    init_X_base();
     Y_constraint_ = aalta_formula::TRUE();
     X_constraint_ = aalta_formula::TRUE();
     current_Y_ = NULL;
@@ -565,6 +593,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 Syn_Frame::insert_winning_state((searcher.back())->GetBddPointer());
                 delete searcher.back();
                 searcher.pop_back();
+                (searcher.back())->init_X_base();
                 (searcher.back())->process_signal(To_winning_state, verbose);
             }
         }
@@ -609,6 +638,7 @@ Status Expand(list<Syn_Frame *> &searcher, const struct timeval &prog_start, boo
                 Syn_Frame::insert_failure_state(searcher.back());
                 delete (searcher.back());
                 searcher.pop_back();
+                (searcher.back())->init_X_base();
                 (searcher.back())->process_signal(To_failure_state, verbose);
             }
         }
@@ -918,6 +948,16 @@ void Syn_Frame::calc_X_base()
 
     aalta_formula *x_reduced = Generalize(state_in_bdd_->GetFormulaPointer(), aalta_formula::TRUE(), current_X_, Accepting_edge);
     assert(BaseWinningAtY(state_in_bdd_->GetFormulaPointer(), x_reduced));
+
+    aalta_formula::af_prt_set state_or_set = state_in_bdd_->GetFormulaPointer()->to_or_set();
+    for (auto it = state_or_set.begin(); it != state_or_set.end(); ++it)
+    {
+        if (!BaseWinningAtY((*it), current_X_))
+            continue;
+        aalta_formula *x_reduced_sub_af = Generalize((*it), aalta_formula::TRUE(), current_X_, Accepting_edge);
+        assert(BaseWinningAtY((*it), x_reduced_sub_af));
+        Syn_Frame::insert_Xbase((*it), x_reduced_sub_af);
+    }
 
     aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
     X_base_ = (aalta_formula(aalta_formula::And, X_base_, neg_x_reduced).simplify())->unique();
