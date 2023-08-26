@@ -398,7 +398,7 @@ Status Syn_Frame::CheckRealizability(bool verbose)
             cout << "known failure state" << endl;
         return Unrealizable;
     }
-    if (EdgeConstraintIsUnsat(Y_constraint_))
+    if (EdgeConstraintIsUnsat(GetRealY_constraint()->simplify()))
     {
         if (verbose)
             cout << "all value of Y-variables has been traveled" << endl;
@@ -521,7 +521,7 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
 aalta_formula *Syn_Frame::GetEdgeConstraint()
 {
     if (current_Y_ == NULL)
-        return aalta_formula(aalta_formula::And, Y_constraint_, X_base_).unique();
+        return aalta_formula(aalta_formula::And,GetRealY_constraint(), X_base_).unique();
     else
         return aalta_formula(aalta_formula::And, current_Y_, GetRealX_constraint()).unique();
 }
@@ -530,6 +530,8 @@ void Syn_Frame::PrintInfo()
 {
     cout << "state formula: " << (state_in_bdd_->GetFormulaPointer())->to_string() << endl;
     cout << "Y constraint: " << Y_constraint_->to_string() << endl;
+    cout << "Y failure: " << Y_failure_->to_string() << endl;
+    cout << "Real Y constraint: " << GetRealY_constraint()->to_string() << endl;
     cout << "X constraint: " << X_constraint_->to_string() << endl;
     cout << "X base: " << X_base_->to_string() << endl;
     cout << "Real X constraint: " << GetRealX_constraint()->to_string() << endl;

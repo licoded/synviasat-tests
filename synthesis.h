@@ -117,6 +117,10 @@ public:
     {
         return aalta_formula(aalta_formula::And, X_base_, X_constraint_).unique();
     }
+    aalta_formula *GetRealY_constraint()
+    {
+        return aalta_formula(aalta_formula::And, Y_failure_, Y_constraint_).unique();
+    }
 
     void SetTravelDirection(aalta_formula *Y, aalta_formula *X);
     inline void ResetTravelDirection()
