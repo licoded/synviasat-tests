@@ -504,6 +504,7 @@ void Syn_Frame::process_signal(Signal signal, bool verbose)
             break;
         }
         aalta_formula *y_reduced = Generalize(state, current_Y_, NULL, NoWay);
+        Syn_Frame::insert_Yfailure(state_in_bdd_->GetFormulaPointer(), y_reduced);
         if (verbose)
             process_signal_printInfo(signal, current_Y_, y_reduced);
         aalta_formula *neg_y_reduced = aalta_formula(aalta_formula::Not, NULL, y_reduced).nnf();
@@ -1050,6 +1051,7 @@ void Syn_Frame::calc_X_base()
         assert(BaseWinningAtY((*it), x_reduced_sub_af));
         Syn_Frame::insert_Xbase((*it), x_reduced_sub_af);
     }
+    Syn_Frame::insert_Xbase(state_in_bdd_->GetFormulaPointer(), x_reduced);
 
     aalta_formula *neg_x_reduced = aalta_formula(aalta_formula::Not, NULL, x_reduced).nnf();
     X_base_ = (aalta_formula(aalta_formula::And, X_base_, neg_x_reduced).simplify())->unique();
