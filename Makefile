@@ -37,7 +37,7 @@ ltlparser/ltlparser.c :
 .PHONY :    release debug clean
 
 release :   $(ALLFILES)
-	    $(CC) $(FLAG) $(RELEASEFLAG) $(ALLFILES) -lm -lz -o ltlfsyn
+	    $(CC) $(FLAG) $(RELEASEFLAG) $(ALLFILES) -static -lm -lz -o ltlfsyn
 
 debug :	$(ALLFILES)
 	$(CC) $(FLAG) $(DEBUGFLAG) $(ALLFILES) -lm -lz -o ltlfsyn
