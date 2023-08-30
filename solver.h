@@ -74,6 +74,7 @@ protected:
 	////////////members
 	int tail_;   //the integer used to represent Tail. It is fixed to be f->id ()+1
 	int max_used_id_;  //the maximum id used in the SAT solver
+	int assump_id_;
 	
 	
 	typedef aalta_formula::af_prt_set af_prt_set;

@@ -24,6 +24,7 @@
 		//tail_ = ++max_used_id_;
 		generate_clauses (f);
 		coi_set_up (f);
+		assump_id_ = get_new_var();
 		if (verbose_)
 		{
 			cout << "id of input formula is " << f->id () << endl;
@@ -157,17 +158,21 @@
 
 	void Solver::add_assump_as_clauses(aalta_formula* f)
 	{
-		int assump_id = get_new_var();
+		add_clause(-assump_id_);
+		dout << "///add_assump_as_clauses BEGIN" << endl;
+		dout << "assump:\t" << f->to_string() << endl;
+		assump_id_ = get_new_var();
 		// assump_id -> /\ xi 		i.e.		 for each xi, assump_id -> xi
 		//							i.e.		 for each xi, !assump_id \/ xi
 		aalta_formula::af_prt_set ands = f->to_set ();
 		for (aalta_formula::af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
 		{
+			dout << "\tsub_assump:\t" << (*it)->to_string() << endl;
+			dout << "\t\tadd_clause:\t" << assump_id_ << "\t->\t";
 			vector<int> clause;
 			// and_elem_id -> \/ xi 		i.e.		 !and_elem_id \/ \/ xi
 			// 	if !and_elem_id is FALSE, the rest is required to be TRUE
-			int and_elem_id = get_new_var();
-			clause.push_back(-and_elem_id);
+			clause.push_back(-assump_id_);
 			aalta_formula::af_prt_set ors = (*it)->to_or_set ();
 			for (aalta_formula::af_prt_set::iterator it2 = ors.begin (); it2 != ors.end (); it2 ++)
 			{
@@ -178,9 +183,12 @@
 				clause.push_back(SAT_id(tmp_af));
 			}
 			add_clause(clause);
-			add_clause(-assump_id, and_elem_id);
+			for (int i = 1; i < clause.size(); i++)
+				dout << clause[i] << " ";
+			dout << endl;
 		}
-		add_clause(assump_id);
+		dout << "add_assump_id:\t" << assump_id_ << endl;
+		dout << "///add_assump_as_clauses END" << endl;
 	}
 
 	 //generate clauses of SAT solver
@@ -697,6 +705,7 @@
  	void Solver::get_assumption_from (aalta_formula* f, bool global)
 	{
 		assumption_.clear ();
+		assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
 		af_prt_set ands = f->to_set ();
 		for (af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
 		{
