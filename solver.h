@@ -65,6 +65,8 @@ public:
 
 	void add_constraint (aalta_formula* c, bool ltlf = true, bool verbose = false);
 	
+	void add_assump_as_clauses(aalta_formula* f);	// for incremental
+
 	void generate_clauses (aalta_formula*); //generate claueses for SAT solver
 	void coi_set_up (aalta_formula *);
 
@@ -149,6 +151,10 @@ protected:
 			max_used_id_ = id;
 	}
 
+	inline int get_new_var ()
+	{
+		return ++max_used_id_;
+	}
 
 
  	

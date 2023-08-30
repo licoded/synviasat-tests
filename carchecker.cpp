@@ -166,9 +166,8 @@
 		if (to_check_->oper () == aalta_formula::False)
 			return false;
 
-		solver_->generate_clauses(assump);
-		solver_->coi_set_up(assump);
-		return car_check_from (aalta_formula(aalta_formula::And,to_check_,assump).unique(), begin_frame_level);
+		solver_->add_assump_as_clauses(assump);
+		return car_check_from (to_check_, begin_frame_level);
 	}
 
  	bool CARChecker::car_check (aalta_formula* f)

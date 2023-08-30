@@ -155,6 +155,34 @@
  		}
 	 }
 
+	void Solver::add_assump_as_clauses(aalta_formula* f)
+	{
+		int assump_id = get_new_var();
+		// assump_id -> /\ xi 		i.e.		 for each xi, assump_id -> xi
+		//							i.e.		 for each xi, !assump_id \/ xi
+		aalta_formula::af_prt_set ands = f->to_set ();
+		for (aalta_formula::af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
+		{
+			vector<int> clause;
+			// and_elem_id -> \/ xi 		i.e.		 !and_elem_id \/ \/ xi
+			// 	if !and_elem_id is FALSE, the rest is required to be TRUE
+			int and_elem_id = get_new_var();
+			clause.push_back(-and_elem_id);
+			aalta_formula::af_prt_set ors = (*it)->to_or_set ();
+			for (aalta_formula::af_prt_set::iterator it2 = ors.begin (); it2 != ors.end (); it2 ++)
+			{
+				aalta_formula *tmp_af = *it2;
+				bool is_literal = tmp_af->oper() >= 11;
+				bool is_neg_literal = tmp_af->oper() == aalta_formula::Not && tmp_af->r_af()->oper() >= 11;
+				assert(is_literal | is_neg_literal);
+				clause.push_back(SAT_id(tmp_af));
+			}
+			add_clause(clause);
+			add_clause(-assump_id, and_elem_id);
+		}
+		add_clause(assump_id);
+	}
+
 	 //generate clauses of SAT solver
 	 void Solver::generate_clauses (aalta_formula* f)
 	 {
