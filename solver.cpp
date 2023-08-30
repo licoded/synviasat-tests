@@ -18,6 +18,7 @@
 	 Solver::Solver (aalta_formula *f, bool verbose, bool partial_on, bool uc_on) :
 	 AaltaSolver (verbose), uc_on_ (uc_on), partial_on_ (partial_on), unsat_forever_ (false)
 	 {
+		af_to_check = f;
 	 	max_used_id_ = f->id ();
 		tail_ = aalta_formula::TAIL ()->id ();
 		build_X_map_priliminary (f);
@@ -705,7 +706,8 @@
  	void Solver::get_assumption_from (aalta_formula* f, bool global)
 	{
 		assumption_.clear ();
-		assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
+		if (f == af_to_check)
+			assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
 		af_prt_set ands = f->to_set ();
 		for (af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
 		{
