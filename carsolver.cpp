@@ -77,6 +77,8 @@
 		{
 			selected_assumption_.insert (SAT_id (*it));		
 		}
+		if (f == af_to_check)
+			selected_assumption_.insert (assump_id_);
 	}
 	
 	

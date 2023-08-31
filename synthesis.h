@@ -131,7 +131,7 @@ public:
 
     CARChecker *InitCARChecker(aalta_formula *f)
     {
-        car_checker_=new CARChecker(f, false, true);
+        car_checker_=new CARChecker(f, true, true);
         return car_checker_;
     }
     CARChecker *GetChecker(){return car_checker_;}

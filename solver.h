@@ -66,6 +66,8 @@ public:
 	void add_constraint (aalta_formula* c, bool ltlf = true, bool verbose = false);
 	
 	void add_assump_as_clauses(aalta_formula* f);	// for incremental
+	void coi_set_up_for_assump(aalta_formula* f);	// for incremental
+													// ATTENTION: it must execute after add_assump_as_clauses!!!
 
 	void generate_clauses (aalta_formula*); //generate claueses for SAT solver
 	void coi_set_up (aalta_formula *);
@@ -178,10 +180,7 @@ protected:
  	inline void build_formula_map (aalta_formula* f)
  	{
  		//for !a, use -id (a) rather than id (!a);
- 		if (f->oper () == aalta_formula::Not)
- 			formula_map_.insert (std::pair<int, aalta_formula*> (-f->r_af ()->id (), f));
- 		else
- 			formula_map_.insert (std::pair<int, aalta_formula*> (f->id (), f));
+		formula_map_.insert ({SAT_id(f), f});
  	}
  	
  	inline int SAT_id (aalta_formula *f)

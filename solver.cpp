@@ -192,6 +192,29 @@
 		dout << "///add_assump_as_clauses END" << endl;
 	}
 
+	void Solver::coi_set_up_for_assump(aalta_formula *f)
+	{
+		std::vector<int> v;
+		v.resize (max_used_id_, 0);
+		aalta_formula::af_prt_set ands = f->to_set ();
+		for (aalta_formula::af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
+		{
+			aalta_formula::af_prt_set ors = (*it)->to_or_set ();
+			for (aalta_formula::af_prt_set::iterator it2 = ors.begin (); it2 != ors.end (); it2 ++)
+			{
+				aalta_formula *tmp_af = *it2;
+				bool is_literal = tmp_af->oper() >= 11;
+				bool is_neg_literal = tmp_af->oper() == aalta_formula::Not && tmp_af->r_af()->oper() >= 11;
+				assert(is_literal | is_neg_literal);
+				build_formula_map(tmp_af);
+				v[abs(SAT_id(tmp_af))-1] = 1;
+				build_formula_map(tmp_af);
+			}
+		}
+		formula_map_.insert({assump_id_, f});
+		coi_map_.insert({assump_id_, v});
+	}
+
 	 //generate clauses of SAT solver
 	 void Solver::generate_clauses (aalta_formula* f)
 	 {
@@ -601,7 +624,7 @@
 		if (f->oper () == aalta_formula::Next)
 		{
 			if (X_map_.find (f->r_af ()->id ()) == X_map_.end ())
- 				X_map_.insert (std::pair<int, int> (f->r_af ()->id (), f->id ()));
+ 				X_map_.insert (std::pair<int, int> (SAT_id(f->r_af ()), f->id ()));
  				build_X_map_priliminary (f->r_af ());
 		}
 		else
@@ -620,7 +643,7 @@
  			return;
  		aalta_formula* next = aalta_formula (aalta_formula::Next, NULL, f).unique ();
 		set_max_used_id (next->id());
-		X_map_.insert (std::pair<int, int> (f->id (), next->id()));
+		X_map_.insert (std::pair<int, int> (SAT_id(f), next->id()));
  		X_reverse_map_.insert (std::pair<int, aalta_formula*> (next->id(), f));
  		//X_map_.insert (std::pair<int, int> (f->id (), ++max_used_id_));
  		//X_reverse_map_.insert (std::pair<int, aalta_formula*> (max_used_id_, f));
@@ -693,7 +716,7 @@
  	{
  		for (af_prt_set::const_iterator it = ands.begin (); it != ands.end (); it ++)
  		{
- 			if (X_map_.find ((*it)->id ()) == X_map_.end ())
+ 			if (X_map_.find (SAT_id(*it)) == X_map_.end ())
  				return true;
  		}
  		return false;

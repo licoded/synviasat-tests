@@ -167,6 +167,7 @@
 			return false;
 
 		solver_->add_assump_as_clauses(assump);
+		solver_->coi_set_up_for_assump(assump);
 		return car_check_from (to_check_, begin_frame_level);
 	}
 
