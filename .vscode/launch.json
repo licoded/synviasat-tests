@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/root/synviasat-tests/ltlfsyn",
-            "args": ["/root/tools/synviasat-raw/rome/counter/counter_2.ltlf","/root/tools/synviasat-raw/rome/counter/counter_2.part", ">", "/root/synviasat-tests/counter_2.log"],
+            "args": ["/root/tools/synviasat-raw/rome/nim_1/nim_1_1.ltlf","/root/tools/synviasat-raw/rome/nim_1/nim_1_1.part", ">", "/root/synviasat-tests/nim_1_1.log"],
             "stopAtEntry": false,
             "cwd": "/root/synviasat-tests/",
             "envFile": "${workspaceFolder}/.env",
