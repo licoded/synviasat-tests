@@ -463,6 +463,9 @@
 	{
 		assert (!unsat_forever_);
 		get_assumption_from (f);
+		if (assump_flag_ && (f->id() == af_to_check->id()))
+			assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
+			
 		assumption_.push (SAT_lit (tail_));
 		if (verbose_)
 		{
@@ -651,7 +654,7 @@
 	
 	int Solver::SAT_id_of_next (aalta_formula *f)
 	{
-		x_map::iterator it = X_map_.find (f->id ());
+		x_map::iterator it = X_map_.find (SAT_id (f));
 		assert (it != X_map_.end());
 		return it->second;
 	}
@@ -729,8 +732,6 @@
  	void Solver::get_assumption_from (aalta_formula* f, bool global)
 	{
 		assumption_.clear ();
-		if (f == af_to_check)
-			assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
 		af_prt_set ands = f->to_set ();
 		for (af_prt_set::iterator it = ands.begin (); it != ands.end (); it ++)
 		{

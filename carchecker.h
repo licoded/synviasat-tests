@@ -47,6 +47,7 @@ namespace aalta
 		CARChecker (aalta_formula *f, bool verbose = false, bool evidence = false) : LTLfChecker (f, verbose, evidence), inv_solver_ (NULL)
 		{	
 			//inv_solver_ = new InvSolver (to_check_->id(), verbose_);
+			solver_->clear_assump_flag();
 		}
 
 		~CARChecker () 

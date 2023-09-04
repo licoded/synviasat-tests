@@ -173,7 +173,10 @@
 
  	bool CARChecker::car_check (aalta_formula* f)
  	{
- 		if (sat_once (f))
+		solver_->set_assump_flag();
+		bool sat_once_res = sat_once (f);
+		solver_->clear_assump_flag();
+ 		if (sat_once_res)
 		{
 			if (verbose_)
 				cout << "sat once is true, return from here\n";
@@ -193,6 +196,7 @@
  		int frame_level = 0;
  		while (true)
  		{
+			solver_->set_cur_search_level(frame_level);
  			tmp_frame_.clear ();
  			if (try_satisfy (f, frame_level))
  				return true;
@@ -212,6 +216,7 @@
 		int frame_level = begin_frame_level - 1;
 		while (true)
 		{
+			solver_->set_cur_search_level(frame_level);
 			tmp_frame_.clear();
 			if (try_satisfy(f, frame_level))
 				return true;

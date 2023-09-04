@@ -71,12 +71,17 @@ public:
 
 	void generate_clauses (aalta_formula*); //generate claueses for SAT solver
 	void coi_set_up (aalta_formula *);
+	void clear_assump_flag () { assump_flag_ = false; }
+	void set_assump_flag () { assump_flag_ = true; }
+	void set_cur_search_level (int frame_level) { cur_search_level_ = true; }
 
 protected:
 	////////////members
 	int tail_;   //the integer used to represent Tail. It is fixed to be f->id ()+1
 	int max_used_id_;  //the maximum id used in the SAT solver
 	int assump_id_;
+	bool assump_flag_;
+	bool cur_search_level_;	// frame_level of aaltaf
 	aalta_formula *af_to_check;
 	
 	
