@@ -463,7 +463,7 @@
 	{
 		assert (!unsat_forever_);
 		get_assumption_from (f);
-		if (assump_flag_ && (f->id() == af_to_check->id()))
+		if (assump_flag_)
 			assumption_.push (SAT_lit (assump_id_)); // incremental for synviasat
 			
 		assumption_.push (SAT_lit (tail_));

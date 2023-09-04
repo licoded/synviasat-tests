@@ -19,7 +19,7 @@
  		assert (!unsat_forever_);
  		set_selected_assumption (f);
 		get_assumption_from (f, false);
-		if ((frame_level == cur_search_level_ )&& (af_to_check->id() == f->id()))
+		if (frame_level == cur_search_level_)
 		{
 			assumption_.push (SAT_lit (assump_id_));
 			selected_assumption_.insert (assump_id_);
@@ -82,7 +82,7 @@
 		{
 			selected_assumption_.insert (SAT_id (*it));		
 		}
-		if (assump_flag_ && (f->id() == af_to_check->id()))
+		if (assump_flag_)
 			selected_assumption_.insert (assump_id_);
 	}
 	
